@@ -1,4 +1,4 @@
-# The Inkwell — Journalism Website
+# Just Write + CAHS & Effect — Journalism Website
 
 A modern, mobile-ready journalism website with CMS, built as a static site for GitHub Pages deployment.
 
