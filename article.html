@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Article — The Inkwell</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .article-progress {
+      position: fixed; top: var(--nav-height); left: 0; right: 0; z-index: 900;
+      height: 3px; background: transparent;
+    }
+    .article-progress-bar {
+      height: 100%; background: var(--accent);
+      width: 0%; transition: width 0.1s linear;
+    }
+    .related-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 32px; }
+    @media(max-width:768px) { .related-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<nav id="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">The <span>Ink</span>well</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="creative.html">Creative</a></li>
+      <li><a href="news.html">News</a></li>
+      <li><a href="writers.html">Writers</a></li>
+      <li><a href="cms.html" class="nav-cta">Admin</a></li>
+    </ul>
+    <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
+  </div>
+</nav>
+<div class="mobile-nav" id="mobile-nav">
+  <span class="mobile-nav-close" id="mobile-nav-close">✕</span>
+  <a href="index.html">Home</a>
+  <a href="creative.html">Creative</a>
+  <a href="news.html">News</a>
+  <a href="writers.html">Writers</a>
+  <a href="cms.html">Admin</a>
+</div>
+
+<div class="article-progress"><div class="article-progress-bar" id="progress-bar"></div></div>
+
+<div class="page">
+  <div id="article-content"></div>
+  <div id="article-not-found" style="display:none;text-align:center;padding:120px 32px;">
+    <h2 style="margin-bottom:16px">Article not found</h2>
+    <p style="color:var(--mid);margin-bottom:32px">This article may have been removed or the link is incorrect.</p>
+    <a href="index.html" class="btn-primary">Return Home</a>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo">The <span>Ink</span>well</div>
+        <p class="footer-desc">Independent writing that takes its time.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Sections</h4>
+        <ul>
+          <li><a href="creative.html">Creative Writing</a></li>
+          <li><a href="news.html">News & Issues</a></li>
+          <li><a href="writers.html">Our Writers</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Admin</h4>
+        <ul><li><a href="cms.html">Content Manager</a></li></ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="footer-year"></span> The Inkwell.</span>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="global-toast"></div>
+<script src="js/core.js"></script>
+<script>
+  Store.init(); setupNav();
+  document.getElementById('footer-year').textContent = new Date().getFullYear();
+  const data = Store.get();
+  const id = getParam('id');
+  const article = data.articles.find(a => a.id === id);
+
+  if (!article) {
+    document.getElementById('article-not-found').style.display = 'block';
+  } else {
+    const author = data.writers.find(w => w.id === article.author);
+    const authorName = author ? author.name : 'Unknown';
+    const backHref = article.type === 'creative' ? 'creative.html' : 'news.html';
+    const backLabel = article.type === 'creative' ? 'Creative Writing' : 'News';
+    const issueInfo = article.issueId ? data.issues.find(i => i.id === article.issueId) : null;
+
+    const heroImg = article.coverImage
+      ? `<div class="article-single-hero"><img src="${article.coverImage}" alt="${article.title}"></div>`
+      : '';
+
+    document.title = `${article.title} — The Inkwell`;
+
+    document.getElementById('article-content').innerHTML = `
+      <article class="article-single">
+        <div class="container-narrow">
+          <a href="${backHref}" class="back-btn">← ${backLabel}</a>
+          <header class="article-single-header">
+            <div class="article-single-tag">${article.type === 'creative' ? 'Essay' : 'News'}</div>
+            <h1>${article.title}</h1>
+            <div class="article-single-meta">
+              <span>By <a href="writers.html#writer-${article.author}" style="color:var(--accent)">${authorName}</a></span>
+              <span class="dot"></span>
+              <span>${formatDate(article.date)}</span>
+              <span class="dot"></span>
+              <span>${article.readTime} min read</span>
+              ${issueInfo ? `<span class="dot"></span><span>${issueInfo.title}</span>` : ''}
+            </div>
+          </header>
+        </div>
+        ${heroImg}
+        <div class="container-narrow">
+          <div class="article-body">${article.body || '<p>No content yet.</p>'}</div>
+
+          ${author ? `
+          <div style="margin-top:64px;padding-top:40px;border-top:1px solid var(--border);display:flex;gap:24px;align-items:flex-start;">
+            <div style="width:72px;height:72px;border-radius:50%;background:var(--cream);overflow:hidden;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--mid);">
+              ${author.avatar ? `<img src="${author.avatar}" alt="${author.name}" style="width:100%;height:100%;object-fit:cover;">` : getWriterInitials(author.name)}
+            </div>
+            <div>
+              <div style="font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:4px;">About the author</div>
+              <div style="font-weight:700;font-size:1rem;margin-bottom:8px;">${author.name}</div>
+              <p style="font-size:0.88rem;color:var(--mid);line-height:1.7;">${truncate(author.bio, 220)}</p>
+              <a href="writers.html#writer-${author.id}" style="font-size:0.78rem;color:var(--accent);letter-spacing:1px;text-transform:uppercase;">Full profile →</a>
+            </div>
+          </div>` : ''}
+        </div>
+      </article>
+
+      <section style="background:var(--cream);padding:64px 0;">
+        <div class="container">
+          <div class="section-header">
+            <div class="ornament">Continue Reading</div>
+            <h2>More from The Inkwell</h2>
+          </div>
+          <div class="related-grid" id="related-articles"></div>
+        </div>
+      </section>`;
+
+    // Related articles
+    const related = data.articles
+      .filter(a => a.id !== article.id && a.status === 'published')
+      .slice(0, 3);
+    document.getElementById('related-articles').innerHTML = related.length
+      ? related.map(a => buildArticleCard(a, data)).join('')
+      : '<p style="color:var(--mid)">No other articles yet.</p>';
+
+    // Reading progress
+    window.addEventListener('scroll', () => {
+      const doc = document.documentElement;
+      const scrollTop = window.scrollY;
+      const scrollHeight = doc.scrollHeight - doc.clientHeight;
+      const progress = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+      document.getElementById('progress-bar').style.width = progress + '%';
+    });
+  }
+
+  setupReveal();
+</script>
+</body>
+</html>

@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — The Inkwell CMS</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { background: var(--ink); }
+    .cms-page { display: flex; }
+    .img-preview {
+      margin-top: 10px; max-height: 120px; max-width: 100%;
+      border: 1px solid rgba(255,255,255,0.1);
+      display: none;
+    }
+    .img-preview.show { display: block; }
+    .toolbar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+    .toolbar button {
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.6); padding: 4px 10px; font-size: 0.78rem;
+      cursor: pointer; font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s;
+    }
+    .toolbar button:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    .cms-mobile-toggle {
+      display: none; position: fixed; top: 16px; left: 16px; z-index: 9001;
+      background: var(--accent); color: #fff; border: none; padding: 8px 14px;
+      font-size: 1.2rem; cursor: pointer;
+    }
+    @media(max-width:768px) {
+      .cms-mobile-toggle { display: block; }
+    }
+    .tab-bar {
+      display: flex; gap: 0; border-bottom: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 32px;
+    }
+    .tab-btn {
+      padding: 12px 20px; font-size: 0.82rem; letter-spacing: 0.5px;
+      background: none; border: none; cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      color: rgba(255,255,255,0.4); transition: all 0.2s;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+    }
+    .tab-btn.active { color: #fff; border-bottom-color: var(--accent); }
+    .tab-btn:hover { color: rgba(255,255,255,0.75); }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="cms-login">
+  <div class="login-box">
+    <h1>The <span style="color:var(--accent)">Ink</span>well</h1>
+    <p>Sign in to the content management system</p>
+    <div class="form-row">
+      <label>Username</label>
+      <input type="text" id="login-user" placeholder="admin" autocomplete="username">
+    </div>
+    <div class="form-row">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" onclick="doLogin()" style="width:100%;justify-content:center;margin-top:8px;">Sign In →</button>
+    <div class="login-error" id="login-error"></div>
+    <p style="font-size:0.75rem;color:rgba(255,255,255,0.2);margin-top:24px;">Default: admin / inkwell2024</p>
+  </div>
+</div>
+
+<!-- CMS MAIN -->
+<div id="cms-app" style="display:none">
+  <button class="cms-mobile-toggle" onclick="toggleSidebar()">☰</button>
+
+  <aside class="cms-sidebar" id="cms-sidebar">
+    <div class="cms-sidebar-logo">
+      <a href="index.html" style="color:var(--cream)">The <span>Ink</span>well</a>
+    </div>
+    <ul class="cms-nav">
+      <li><a href="#" class="active" data-section="dashboard" onclick="switchSection('dashboard',this)"><span class="icon">◈</span> Dashboard</a></li>
+      <li><a href="#" data-section="articles" onclick="switchSection('articles',this)"><span class="icon">✦</span> Articles</a></li>
+      <li><a href="#" data-section="issues" onclick="switchSection('issues',this)"><span class="icon">◉</span> News Issues</a></li>
+      <li><a href="#" data-section="writers" onclick="switchSection('writers',this)"><span class="icon">◎</span> Writers</a></li>
+      <li style="margin-top:auto;padding-top:40px;">
+        <a href="#" onclick="doLogout()"><span class="icon">⊘</span> Sign Out</a>
+      </li>
+    </ul>
+  </aside>
+
+  <main class="cms-main">
+    <!-- DASHBOARD -->
+    <div class="cms-section active" id="section-dashboard">
+      <div class="cms-topbar">
+        <h1>Dashboard</h1>
+        <div style="font-size:0.8rem;color:rgba(255,255,255,0.3);" id="cms-date"></div>
+      </div>
+      <div class="stats-row" id="dash-stats"></div>
+      <h3 style="color:var(--cream);font-size:1rem;font-weight:600;margin-bottom:20px;letter-spacing:0.5px;">Recent Articles</h3>
+      <table class="cms-table" id="dash-recent"></table>
+    </div>
+
+    <!-- ARTICLES -->
+    <div class="cms-section" id="section-articles">
+      <div class="cms-topbar">
+        <h1>Articles</h1>
+        <button class="btn-primary" onclick="openArticleModal()">+ New Article</button>
+      </div>
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="filterArticles('all',this)">All</button>
+        <button class="tab-btn" onclick="filterArticles('creative',this)">Creative</button>
+        <button class="tab-btn" onclick="filterArticles('news',this)">News</button>
+        <button class="tab-btn" onclick="filterArticles('published',this)">Published</button>
+        <button class="tab-btn" onclick="filterArticles('draft',this)">Drafts</button>
+      </div>
+      <table class="cms-table" id="articles-table"></table>
+    </div>
+
+    <!-- ISSUES -->
+    <div class="cms-section" id="section-issues">
+      <div class="cms-topbar">
+        <h1>News Issues</h1>
+        <button class="btn-primary" onclick="openIssueModal()">+ New Issue</button>
+      </div>
+      <table class="cms-table" id="issues-table"></table>
+    </div>
+
+    <!-- WRITERS -->
+    <div class="cms-section" id="section-writers">
+      <div class="cms-topbar">
+        <h1>Writers</h1>
+        <button class="btn-primary" onclick="openWriterModal()">+ New Writer</button>
+      </div>
+      <table class="cms-table" id="writers-table"></table>
+    </div>
+  </main>
+</div>
+
+<!-- ARTICLE MODAL -->
+<div class="modal-overlay" id="article-modal">
+  <div class="modal" style="max-width:760px;">
+    <button class="modal-close" onclick="closeModal('article-modal')">✕</button>
+    <h2 id="article-modal-title">New Article</h2>
+    <input type="hidden" id="art-id">
+    <div class="form-grid-2">
+      <div class="form-row">
+        <label>Type</label>
+        <select id="art-type">
+          <option value="creative">Creative Writing</option>
+          <option value="news">News Article</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Status</label>
+        <select id="art-status">
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Title</label>
+      <input type="text" id="art-title" placeholder="Article headline…">
+    </div>
+    <div class="form-row">
+      <label>Excerpt</label>
+      <input type="text" id="art-excerpt" placeholder="Short summary or dek…">
+    </div>
+    <div class="form-grid-2">
+      <div class="form-row">
+        <label>Author</label>
+        <select id="art-author"></select>
+      </div>
+      <div class="form-row">
+        <label>News Issue (news only)</label>
+        <select id="art-issue">
+          <option value="">— None —</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid-2">
+      <div class="form-row">
+        <label>Publication Date</label>
+        <input type="date" id="art-date">
+      </div>
+      <div class="form-row">
+        <label>Read Time (minutes)</label>
+        <input type="number" id="art-readtime" value="5" min="1" max="60">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Cover Image URL (optional)</label>
+      <input type="url" id="art-image" placeholder="https://…" oninput="previewImg('art-image','art-img-preview')">
+      <img id="art-img-preview" class="img-preview" alt="Preview">
+    </div>
+    <div class="form-row">
+      <label>Body (HTML supported)</label>
+      <div class="toolbar">
+        <button onclick="wrapText('art-body','<p>','</p>')">¶ Para</button>
+        <button onclick="wrapText('art-body','<h2>','</h2>')">H2</button>
+        <button onclick="wrapText('art-body','<h3>','</h3>')">H3</button>
+        <button onclick="wrapText('art-body','<strong>','</strong>')"><b>Bold</b></button>
+        <button onclick="wrapText('art-body','<em>','</em>')"><i>Italic</i></button>
+        <button onclick="wrapText('art-body','<blockquote>','</blockquote>')">" Quote</button>
+      </div>
+      <textarea id="art-body" placeholder="Article body HTML…" style="min-height:260px;"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn-xs btn-edit" onclick="closeModal('article-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveArticle()">Save Article</button>
+    </div>
+  </div>
+</div>
+
+<!-- ISSUE MODAL -->
+<div class="modal-overlay" id="issue-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('issue-modal')">✕</button>
+    <h2 id="issue-modal-title">New Issue</h2>
+    <input type="hidden" id="issue-id">
+    <div class="form-row">
+      <label>Issue Title</label>
+      <input type="text" id="issue-title" placeholder="e.g. Issue No. 13">
+    </div>
+    <div class="form-row">
+      <label>Date</label>
+      <input type="date" id="issue-date">
+    </div>
+    <div class="form-row">
+      <label>Description / Tagline (optional)</label>
+      <input type="text" id="issue-description" placeholder="e.g. Spring Edition — Urban Life & Politics">
+    </div>
+    <div class="form-actions">
+      <button class="btn-xs btn-edit" onclick="closeModal('issue-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveIssue()">Save Issue</button>
+    </div>
+  </div>
+</div>
+
+<!-- WRITER MODAL -->
+<div class="modal-overlay" id="writer-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('writer-modal')">✕</button>
+    <h2 id="writer-modal-title">New Writer</h2>
+    <input type="hidden" id="wr-id">
+    <div class="form-grid-2">
+      <div class="form-row">
+        <label>Full Name</label>
+        <input type="text" id="wr-name" placeholder="Writer's name">
+      </div>
+      <div class="form-row">
+        <label>Role / Title</label>
+        <input type="text" id="wr-role" placeholder="e.g. Senior Correspondent">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Bio</label>
+      <textarea id="wr-bio" placeholder="Writer biography…" style="min-height:140px;"></textarea>
+    </div>
+    <div class="form-row">
+      <label>Avatar Image URL (optional)</label>
+      <input type="url" id="wr-avatar" placeholder="https://…" oninput="previewImg('wr-avatar','wr-img-preview')">
+      <img id="wr-img-preview" class="img-preview" alt="Preview">
+    </div>
+    <div class="form-actions">
+      <button class="btn-xs btn-edit" onclick="closeModal('writer-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveWriter()">Save Writer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="global-toast"></div>
+<script src="js/core.js"></script>
+<script>
+// ─── AUTH ────────────────────────────────────
+const CREDS = { user: 'admin', pass: 'inkwell2024' };
+let isLoggedIn = sessionStorage.getItem('inkwell_auth') === '1';
+
+function checkAuth() {
+  if (isLoggedIn) { showCMS(); } else { document.getElementById('login-screen').style.display = 'flex'; }
+}
+
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  if (u === CREDS.user && p === CREDS.pass) {
+    sessionStorage.setItem('inkwell_auth','1');
+    isLoggedIn = true;
+    showCMS();
+  } else {
+    document.getElementById('login-error').textContent = 'Incorrect username or password.';
+  }
+}
+
+document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+function doLogout() {
+  sessionStorage.removeItem('inkwell_auth');
+  location.reload();
+}
+
+function showCMS() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('cms-app').style.display = 'flex';
+  Store.init();
+  renderAll();
+  document.getElementById('cms-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+
+// ─── RENDER ──────────────────────────────────
+function renderAll() {
+  renderDashboard();
+  renderArticlesTable('all');
+  renderIssuesTable();
+  renderWritersTable();
+}
+
+function renderDashboard() {
+  const data = Store.get();
+  const pub = data.articles.filter(a=>a.status==='published').length;
+  const draft = data.articles.filter(a=>a.status==='draft').length;
+  const news = data.articles.filter(a=>a.type==='news').length;
+  const creative = data.articles.filter(a=>a.type==='creative').length;
+
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-card-num">${data.articles.length}</div><div class="stat-card-label">Total Articles</div></div>
+    <div class="stat-card"><div class="stat-card-num">${pub}</div><div class="stat-card-label">Published</div></div>
+    <div class="stat-card"><div class="stat-card-num">${data.issues.length}</div><div class="stat-card-label">News Issues</div></div>
+    <div class="stat-card"><div class="stat-card-num">${data.writers.length}</div><div class="stat-card-label">Writers</div></div>`;
+
+  const recent = [...data.articles].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+  document.getElementById('dash-recent').innerHTML = `
+    <thead><tr>
+      <th>Title</th><th>Type</th><th>Author</th><th>Date</th><th>Status</th>
+    </tr></thead>
+    <tbody>${recent.map(a=>`
+      <tr>
+        <td><a href="article.html?id=${a.id}" style="color:var(--cream)">${a.title}</a></td>
+        <td><span class="badge badge-${a.type}">${a.type}</span></td>
+        <td>${getWriterName(a.author, data)}</td>
+        <td>${formatDate(a.date)}</td>
+        <td><span class="badge badge-${a.status==='published'?'pub':'draft'}">${a.status}</span></td>
+      </tr>`).join('')}
+    </tbody>`;
+}
+
+let currentArticleFilter = 'all';
+
+function filterArticles(filter, btn) {
+  currentArticleFilter = filter;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderArticlesTable(filter);
+}
+
+function renderArticlesTable(filter = 'all') {
+  const data = Store.get();
+  let arts = data.articles;
+  if (filter === 'creative') arts = arts.filter(a=>a.type==='creative');
+  else if (filter === 'news') arts = arts.filter(a=>a.type==='news');
+  else if (filter === 'published') arts = arts.filter(a=>a.status==='published');
+  else if (filter === 'draft') arts = arts.filter(a=>a.status==='draft');
+  arts = [...arts].sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  document.getElementById('articles-table').innerHTML = `
+    <thead><tr>
+      <th>Title</th><th>Type</th><th>Issue</th><th>Author</th><th>Date</th><th>Status</th><th>Actions</th>
+    </tr></thead>
+    <tbody>${arts.map(a=>{
+      const issue = a.issueId ? data.issues.find(i=>i.id===a.issueId) : null;
+      return `<tr>
+        <td style="max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${a.title}</td>
+        <td><span class="badge badge-${a.type}">${a.type}</span></td>
+        <td style="font-size:0.8rem;">${issue ? issue.title : '—'}</td>
+        <td>${getWriterName(a.author, data)}</td>
+        <td>${formatDate(a.date)}</td>
+        <td><span class="badge badge-${a.status==='published'?'pub':'draft'}">${a.status}</span></td>
+        <td>
+          <div class="cms-actions">
+            <button class="btn-xs btn-edit" onclick="openArticleModal('${a.id}')">Edit</button>
+            <button class="btn-xs btn-pub" onclick="togglePublish('${a.id}')">${a.status==='published'?'Unpublish':'Publish'}</button>
+            <button class="btn-xs btn-delete" onclick="deleteArticle('${a.id}')">Delete</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('')}
+    </tbody>`;
+}
+
+function renderIssuesTable() {
+  const data = Store.get();
+  const issues = [...data.issues].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  document.getElementById('issues-table').innerHTML = `
+    <thead><tr><th>Title</th><th>Date</th><th>Description</th><th>Articles</th><th>Actions</th></tr></thead>
+    <tbody>${issues.map(i=>{
+      const count = data.articles.filter(a=>a.issueId===i.id).length;
+      return `<tr>
+        <td>${i.title}</td>
+        <td>${formatDate(i.date)}</td>
+        <td style="color:rgba(255,255,255,0.45);font-size:0.85rem;">${i.description||'—'}</td>
+        <td>${count} article${count!==1?'s':''}</td>
+        <td>
+          <div class="cms-actions">
+            <button class="btn-xs btn-edit" onclick="openIssueModal('${i.id}')">Edit</button>
+            <button class="btn-xs btn-delete" onclick="deleteIssue('${i.id}')">Delete</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('')}
+    </tbody>`;
+}
+
+function renderWritersTable() {
+  const data = Store.get();
+  document.getElementById('writers-table').innerHTML = `
+    <thead><tr><th>Name</th><th>Role</th><th>Articles</th><th>Actions</th></tr></thead>
+    <tbody>${data.writers.map(w=>{
+      const count = data.articles.filter(a=>a.author===w.id).length;
+      return `<tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;flex-shrink:0;">
+              ${w.avatar?`<img src="${w.avatar}" style="width:100%;height:100%;object-fit:cover;">`:getWriterInitials(w.name)}
+            </div>
+            ${w.name}
+          </div>
+        </td>
+        <td style="font-size:0.85rem;color:rgba(255,255,255,0.5);">${w.role}</td>
+        <td>${count}</td>
+        <td>
+          <div class="cms-actions">
+            <button class="btn-xs btn-edit" onclick="openWriterModal('${w.id}')">Edit</button>
+            <button class="btn-xs btn-delete" onclick="deleteWriter('${w.id}')">Delete</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('')}
+    </tbody>`;
+}
+
+// ─── SECTION SWITCHING ───────────────────────
+function switchSection(name, link) {
+  document.querySelectorAll('.cms-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('section-'+name).classList.add('active');
+  document.querySelectorAll('.cms-nav a').forEach(a=>a.classList.remove('active'));
+  link.classList.add('active');
+  document.getElementById('cms-sidebar').classList.remove('mobile-open');
+}
+
+function toggleSidebar() {
+  document.getElementById('cms-sidebar').classList.toggle('mobile-open');
+}
+
+// ─── MODALS ──────────────────────────────────
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function openArticleModal(id) {
+  const data = Store.get();
+  // Populate selects
+  const authorSel = document.getElementById('art-author');
+  authorSel.innerHTML = data.writers.map(w=>`<option value="${w.id}">${w.name}</option>`).join('');
+  const issueSel = document.getElementById('art-issue');
+  issueSel.innerHTML = '<option value="">— None —</option>' +
+    data.issues.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(i=>`<option value="${i.id}">${i.title} (${formatDate(i.date)})</option>`).join('');
+
+  if (id) {
+    const art = data.articles.find(a=>a.id===id);
+    if (!art) return;
+    document.getElementById('article-modal-title').textContent = 'Edit Article';
+    document.getElementById('art-id').value = art.id;
+    document.getElementById('art-type').value = art.type;
+    document.getElementById('art-status').value = art.status;
+    document.getElementById('art-title').value = art.title;
+    document.getElementById('art-excerpt').value = art.excerpt;
+    document.getElementById('art-author').value = art.author;
+    document.getElementById('art-issue').value = art.issueId || '';
+    document.getElementById('art-date').value = art.date;
+    document.getElementById('art-readtime').value = art.readTime;
+    document.getElementById('art-image').value = art.coverImage || '';
+    document.getElementById('art-body').value = art.body || '';
+    previewImg('art-image','art-img-preview');
+  } else {
+    document.getElementById('article-modal-title').textContent = 'New Article';
+    document.getElementById('art-id').value = '';
+    document.getElementById('art-type').value = 'creative';
+    document.getElementById('art-status').value = 'draft';
+    document.getElementById('art-title').value = '';
+    document.getElementById('art-excerpt').value = '';
+    document.getElementById('art-issue').value = '';
+    document.getElementById('art-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('art-readtime').value = 5;
+    document.getElementById('art-image').value = '';
+    document.getElementById('art-body').value = '';
+    document.getElementById('art-img-preview').classList.remove('show');
+  }
+  document.getElementById('article-modal').classList.add('open');
+}
+
+function saveArticle() {
+  const title = document.getElementById('art-title').value.trim();
+  if (!title) { showToast('Title is required'); return; }
+  const data = Store.get();
+  const id = document.getElementById('art-id').value;
+  const article = {
+    id: id || 'a' + Date.now(),
+    type: document.getElementById('art-type').value,
+    status: document.getElementById('art-status').value,
+    title,
+    excerpt: document.getElementById('art-excerpt').value.trim(),
+    author: document.getElementById('art-author').value,
+    issueId: document.getElementById('art-issue').value,
+    date: document.getElementById('art-date').value,
+    readTime: parseInt(document.getElementById('art-readtime').value) || 5,
+    coverImage: document.getElementById('art-image').value.trim(),
+    body: document.getElementById('art-body').value.trim()
+  };
+  if (id) {
+    const idx = data.articles.findIndex(a=>a.id===id);
+    if (idx >= 0) data.articles[idx] = article;
+  } else {
+    data.articles.unshift(article);
+  }
+  Store.save(data);
+  closeModal('article-modal');
+  renderAll();
+  showToast(id ? 'Article updated' : 'Article created');
+}
+
+function togglePublish(id) {
+  const data = Store.get();
+  const art = data.articles.find(a=>a.id===id);
+  if (!art) return;
+  art.status = art.status === 'published' ? 'draft' : 'published';
+  Store.save(data);
+  renderAll();
+  showToast(art.status === 'published' ? 'Article published' : 'Article unpublished');
+}
+
+function deleteArticle(id) {
+  if (!confirm('Delete this article? This cannot be undone.')) return;
+  const data = Store.get();
+  data.articles = data.articles.filter(a=>a.id!==id);
+  Store.save(data);
+  renderAll();
+  showToast('Article deleted');
+}
+
+function openIssueModal(id) {
+  if (id) {
+    const data = Store.get();
+    const issue = data.issues.find(i=>i.id===id);
+    if (!issue) return;
+    document.getElementById('issue-modal-title').textContent = 'Edit Issue';
+    document.getElementById('issue-id').value = issue.id;
+    document.getElementById('issue-title').value = issue.title;
+    document.getElementById('issue-date').value = issue.date;
+    document.getElementById('issue-description').value = issue.description || '';
+  } else {
+    document.getElementById('issue-modal-title').textContent = 'New Issue';
+    document.getElementById('issue-id').value = '';
+    document.getElementById('issue-title').value = '';
+    document.getElementById('issue-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('issue-description').value = '';
+  }
+  document.getElementById('issue-modal').classList.add('open');
+}
+
+function saveIssue() {
+  const title = document.getElementById('issue-title').value.trim();
+  if (!title) { showToast('Issue title is required'); return; }
+  const data = Store.get();
+  const id = document.getElementById('issue-id').value;
+  const issue = {
+    id: id || 'i' + Date.now(),
+    title,
+    date: document.getElementById('issue-date').value,
+    description: document.getElementById('issue-description').value.trim()
+  };
+  if (id) {
+    const idx = data.issues.findIndex(i=>i.id===id);
+    if (idx >= 0) data.issues[idx] = issue;
+  } else {
+    data.issues.unshift(issue);
+  }
+  Store.save(data);
+  closeModal('issue-modal');
+  renderAll();
+  showToast(id ? 'Issue updated' : 'Issue created');
+}
+
+function deleteIssue(id) {
+  if (!confirm('Delete this issue? Articles assigned to it will become unassigned.')) return;
+  const data = Store.get();
+  data.issues = data.issues.filter(i=>i.id!==id);
+  data.articles.forEach(a=>{ if(a.issueId===id) a.issueId=''; });
+  Store.save(data);
+  renderAll();
+  showToast('Issue deleted');
+}
+
+function openWriterModal(id) {
+  if (id) {
+    const data = Store.get();
+    const w = data.writers.find(w=>w.id===id);
+    if (!w) return;
+    document.getElementById('writer-modal-title').textContent = 'Edit Writer';
+    document.getElementById('wr-id').value = w.id;
+    document.getElementById('wr-name').value = w.name;
+    document.getElementById('wr-role').value = w.role;
+    document.getElementById('wr-bio').value = w.bio;
+    document.getElementById('wr-avatar').value = w.avatar || '';
+    previewImg('wr-avatar','wr-img-preview');
+  } else {
+    document.getElementById('writer-modal-title').textContent = 'New Writer';
+    document.getElementById('wr-id').value = '';
+    document.getElementById('wr-name').value = '';
+    document.getElementById('wr-role').value = '';
+    document.getElementById('wr-bio').value = '';
+    document.getElementById('wr-avatar').value = '';
+    document.getElementById('wr-img-preview').classList.remove('show');
+  }
+  document.getElementById('writer-modal').classList.add('open');
+}
+
+function saveWriter() {
+  const name = document.getElementById('wr-name').value.trim();
+  if (!name) { showToast('Name is required'); return; }
+  const data = Store.get();
+  const id = document.getElementById('wr-id').value;
+  const writer = {
+    id: id || 'w' + Date.now(),
+    name,
+    role: document.getElementById('wr-role').value.trim(),
+    bio: document.getElementById('wr-bio').value.trim(),
+    avatar: document.getElementById('wr-avatar').value.trim()
+  };
+  if (id) {
+    const idx = data.writers.findIndex(w=>w.id===id);
+    if (idx >= 0) data.writers[idx] = writer;
+  } else {
+    data.writers.push(writer);
+  }
+  Store.save(data);
+  closeModal('writer-modal');
+  renderAll();
+  showToast(id ? 'Writer updated' : 'Writer added');
+}
+
+function deleteWriter(id) {
+  if (!confirm('Delete this writer? Their articles will lose author assignment.')) return;
+  const data = Store.get();
+  data.writers = data.writers.filter(w=>w.id!==id);
+  Store.save(data);
+  renderAll();
+  showToast('Writer deleted');
+}
+
+// ─── HELPERS ─────────────────────────────────
+function previewImg(inputId, previewId) {
+  const url = document.getElementById(inputId).value.trim();
+  const img = document.getElementById(previewId);
+  if (url) { img.src = url; img.classList.add('show'); }
+  else { img.classList.remove('show'); }
+}
+
+function wrapText(textareaId, before, after) {
+  const ta = document.getElementById(textareaId);
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const selected = ta.value.substring(start, end);
+  const replacement = before + (selected || 'text') + after;
+  ta.value = ta.value.substring(0, start) + replacement + ta.value.substring(end);
+  ta.focus();
+  ta.selectionStart = start + before.length;
+  ta.selectionEnd = start + before.length + (selected || 'text').length;
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// Init
+Store.init();
+checkAuth();
+</script>
+</body>
+</html>
