@@ -3,69 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — The Gorgon + CAHS & Effect CMS</title>
+  <title>Admin — The Inkwell CMS</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    body { background: var(--ink); }
-    .cms-page { display: flex; }
-    .img-preview { margin-top:10px;max-height:140px;max-width:100%;border:1px solid rgba(255,255,255,0.1);object-fit:cover;display:none; }
-    .img-preview.show { display:block; }
-    .img-upload-zone { border:1px dashed rgba(255,255,255,0.18);padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;transition:border-color 0.2s,background 0.2s;position:relative; }
-    .img-upload-zone:hover,.img-upload-zone.dragover { border-color:var(--accent);background:rgba(200,57,43,0.06); }
-    .img-upload-zone input[type="file"] { position:absolute;inset:0;opacity:0;cursor:pointer;width:100%; }
-    .img-upload-label { font-size:0.8rem;color:rgba(255,255,255,0.4);text-align:center;pointer-events:none; }
-    .img-upload-label strong { color:var(--accent); }
-    .img-upload-icon { font-size:1.6rem;pointer-events:none; }
-    .img-source-tabs { display:flex;gap:0;margin-bottom:8px; }
-    .img-source-tab { padding:6px 16px;font-size:0.75rem;letter-spacing:0.5px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);cursor:pointer;color:rgba(255,255,255,0.4);font-family:'DM Sans',sans-serif;transition:all 0.2s; }
-    .img-source-tab:first-child { border-right:none; }
-    .img-source-tab.active { background:rgba(200,57,43,0.15);color:var(--accent);border-color:var(--accent); }
-    .img-source-panel { display:none; }
-    .img-source-panel.active { display:block; }
-    .img-clear-btn { margin-top:8px;font-size:0.72rem;color:rgba(255,255,255,0.3);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:color 0.2s;display:none; }
-    .img-clear-btn.show { display:inline-block; }
-    .img-clear-btn:hover { color:var(--accent); }
-    .toolbar { display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px; }
-    .toolbar button { background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s; }
-    .toolbar button:hover { background:rgba(255,255,255,0.15);color:#fff; }
-    .cms-mobile-toggle { display:none;position:fixed;top:16px;left:16px;z-index:9001;background:var(--accent);color:#fff;border:none;padding:8px 14px;font-size:1.2rem;cursor:pointer; }
+    body{background:var(--ink);}
+    .img-preview{margin-top:10px;max-height:140px;max-width:100%;border:1px solid rgba(255,255,255,0.1);object-fit:cover;display:none;}
+    .img-preview.show{display:block;}
+    .img-upload-zone{border:1px dashed rgba(255,255,255,0.18);padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;transition:border-color 0.2s,background 0.2s;position:relative;}
+    .img-upload-zone:hover,.img-upload-zone.dragover{border-color:var(--accent);background:rgba(200,57,43,0.06);}
+    .img-upload-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;}
+    .img-upload-label{font-size:0.8rem;color:rgba(255,255,255,0.4);text-align:center;pointer-events:none;}
+    .img-upload-label strong{color:var(--accent);}
+    .img-upload-icon{font-size:1.6rem;pointer-events:none;}
+    .img-source-tabs{display:flex;gap:0;margin-bottom:8px;}
+    .img-source-tab{padding:6px 16px;font-size:0.75rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);cursor:pointer;color:rgba(255,255,255,0.4);font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+    .img-source-tab:first-child{border-right:none;}
+    .img-source-tab.active{background:rgba(200,57,43,0.15);color:var(--accent);border-color:var(--accent);}
+    .img-source-panel{display:none;}
+    .img-source-panel.active{display:block;}
+    .img-clear-btn{margin-top:8px;font-size:0.72rem;color:rgba(255,255,255,0.3);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:color 0.2s;display:none;}
+    .img-clear-btn.show{display:inline-block;}
+    .img-clear-btn:hover{color:var(--accent);}
+    .toolbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;}
+    .toolbar button{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+    .toolbar button:hover{background:rgba(255,255,255,0.15);color:#fff;}
+    .cms-mobile-toggle{display:none;position:fixed;top:16px;left:16px;z-index:9001;background:var(--accent);color:#fff;border:none;padding:8px 14px;font-size:1.2rem;cursor:pointer;}
     @media(max-width:768px){.cms-mobile-toggle{display:block;}}
-    .tab-bar { display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:32px; }
-    .tab-btn { padding:12px 20px;font-size:0.82rem;letter-spacing:0.5px;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;color:rgba(255,255,255,0.4);transition:all 0.2s;border-bottom:2px solid transparent;margin-bottom:-1px; }
-    .tab-btn.active { color:#fff;border-bottom-color:var(--accent); }
-    .tab-btn:hover { color:rgba(255,255,255,0.75); }
-    /* GitHub settings panel */
-    .gh-status { display:inline-flex;align-items:center;gap:8px;font-size:0.8rem;padding:6px 12px;border:1px solid rgba(255,255,255,0.1); }
-    .gh-dot { width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2); }
-    .gh-dot.connected { background:#6bba6b; }
-    .gh-dot.error { background:#e55; }
-    .info-box { background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);padding:20px 24px;font-size:0.85rem;color:rgba(255,255,255,0.5);line-height:1.8;margin-bottom:28px; }
-    .info-box strong { color:rgba(255,255,255,0.75); }
-    .info-box code { font-family:monospace;background:rgba(255,255,255,0.08);padding:1px 6px;font-size:0.82rem;color:var(--accent); }
-    .saving-overlay { display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.6);backdrop-filter:blur(3px);align-items:center;justify-content:center;flex-direction:column;gap:16px; }
-    .saving-overlay.show { display:flex; }
-    .saving-spinner { width:36px;height:36px;border:3px solid rgba(255,255,255,0.1);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite; }
+    .tab-bar{display:flex;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:32px;}
+    .tab-btn{padding:12px 20px;font-size:0.82rem;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;color:rgba(255,255,255,0.4);transition:all 0.2s;border-bottom:2px solid transparent;margin-bottom:-1px;}
+    .tab-btn.active{color:#fff;border-bottom-color:var(--accent);}
+    .tab-btn:hover{color:rgba(255,255,255,0.75);}
+    .db-status{display:inline-flex;align-items:center;gap:8px;font-size:0.8rem;padding:6px 12px;border:1px solid rgba(255,255,255,0.1);}
+    .db-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);}
+    .db-dot.ok{background:#6bba6b;}
+    .db-dot.error{background:#e55;}
+    .saving-overlay{display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.6);backdrop-filter:blur(3px);align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+    .saving-overlay.show{display:flex;}
+    .saving-spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,0.1);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .saving-msg { color:rgba(255,255,255,0.6);font-size:0.88rem;letter-spacing:0.5px; }
+    .saving-msg{color:rgba(255,255,255,0.6);font-size:0.88rem;letter-spacing:0.5px;}
+    .info-box{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);padding:20px 24px;font-size:0.85rem;color:rgba(255,255,255,0.5);line-height:1.9;margin-bottom:28px;}
+    .info-box strong{color:rgba(255,255,255,0.8);}
+    .info-box code{font-family:monospace;background:rgba(255,255,255,0.08);padding:1px 6px;font-size:0.82rem;color:var(--accent);}
+    .step-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:0.72rem;font-weight:700;margin-right:6px;flex-shrink:0;}
   </style>
 </head>
 <body>
 
-<!-- SAVING OVERLAY -->
 <div class="saving-overlay" id="saving-overlay">
   <div class="saving-spinner"></div>
-  <div class="saving-msg" id="saving-msg">Saving to GitHub…</div>
+  <div class="saving-msg" id="saving-msg">Saving…</div>
 </div>
 
-<!-- LOGIN SCREEN -->
+<!-- LOGIN -->
 <div id="login-screen" class="cms-login">
   <div class="login-box">
-    <h1>The Gorgon + CAHS & Effect</h1>
+    <h1>The <span style="color:var(--accent)">Ink</span>well</h1>
     <p>Sign in to the content management system</p>
     <div class="form-row"><label>Username</label><input type="text" id="login-user" placeholder="admin" autocomplete="username"></div>
     <div class="form-row"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"></div>
     <button class="btn-primary" onclick="doLogin()" style="width:100%;justify-content:center;margin-top:8px;">Sign In →</button>
     <div class="login-error" id="login-error"></div>
+    <p style="font-size:0.75rem;color:rgba(255,255,255,0.2);margin-top:24px;">Default password: inkwell2024</p>
   </div>
 </div>
 
@@ -73,13 +72,13 @@
 <div id="cms-app" style="display:none">
   <button class="cms-mobile-toggle" onclick="toggleSidebar()">☰</button>
   <aside class="cms-sidebar" id="cms-sidebar">
-    <div class="cms-sidebar-logo"><a href="index.html" style="color:var(--cream)">The Gorgon + CAHS & Effect</a></div>
+    <div class="cms-sidebar-logo"><a href="index.html" style="color:var(--cream)">The <span>Ink</span>well</a></div>
     <ul class="cms-nav">
       <li><a href="#" class="active" data-section="dashboard" onclick="switchSection('dashboard',this)"><span class="icon">◈</span> Dashboard</a></li>
       <li><a href="#" data-section="articles"  onclick="switchSection('articles',this)"><span class="icon">✦</span> Articles</a></li>
       <li><a href="#" data-section="issues"    onclick="switchSection('issues',this)"><span class="icon">◉</span> News Issues</a></li>
       <li><a href="#" data-section="writers"   onclick="switchSection('writers',this)"><span class="icon">◎</span> Writers</a></li>
-      <li><a href="#" data-section="settings"  onclick="switchSection('settings',this)"><span class="icon">⚙</span> GitHub DB</a></li>
+      <li><a href="#" data-section="settings"  onclick="switchSection('settings',this)"><span class="icon">⚙</span> Database</a></li>
       <li style="margin-top:auto;padding-top:40px;"><a href="#" onclick="doLogout()"><span class="icon">⊘</span> Sign Out</a></li>
     </ul>
   </aside>
@@ -91,13 +90,12 @@
       <div class="cms-topbar">
         <h1>Dashboard</h1>
         <div style="display:flex;align-items:center;gap:12px;">
-          <div class="gh-status" id="gh-status-badge"><div class="gh-dot" id="gh-dot"></div><span id="gh-status-text">Not configured</span></div>
+          <div class="db-status"><div class="db-dot" id="db-dot"></div><span id="db-status-text">Connecting…</span></div>
           <div style="font-size:0.8rem;color:rgba(255,255,255,0.3);" id="cms-date"></div>
         </div>
       </div>
       <div id="dash-db-warning" style="display:none;background:rgba(200,57,43,0.12);border:1px solid rgba(200,57,43,0.3);padding:16px 20px;margin-bottom:28px;font-size:0.88rem;color:rgba(255,255,255,0.7);">
-        ⚠ GitHub database not configured. Changes will be lost when you close the browser.
-        <a href="#" onclick="switchSection('settings',document.querySelector('[data-section=settings]'));return false;" style="color:var(--accent);margin-left:8px;">Set up now →</a>
+        ⚠ Cannot reach the database. Check your <a href="#" onclick="switchSection('settings',document.querySelector('[data-section=settings]'));return false;" style="color:var(--accent)">Database settings →</a>
       </div>
       <div class="stats-row" id="dash-stats"></div>
       <h3 style="color:var(--cream);font-size:1rem;font-weight:600;margin-bottom:20px;">Recent Articles</h3>
@@ -129,46 +127,33 @@
       <table class="cms-table" id="writers-table"></table>
     </div>
 
-    <!-- GITHUB SETTINGS -->
+    <!-- DATABASE SETTINGS -->
     <div class="cms-section" id="section-settings">
-      <div class="cms-topbar"><h1>GitHub Database</h1><div class="gh-status" id="gh-status-badge2"><div class="gh-dot" id="gh-dot2"></div><span id="gh-status-text2">Not configured</span></div></div>
-
+      <div class="cms-topbar"><h1>Database Settings</h1><div class="db-status"><div class="db-dot" id="db-dot2"></div><span id="db-status-text2">—</span></div></div>
       <div class="info-box">
-        <strong>How it works</strong><br>
-        All articles, writers, and issues are stored in a <code>data/db.json</code> file in your GitHub repository.
-        Public pages load data from GitHub's CDN — no server needed. The CMS writes back via the GitHub API using a Personal Access Token (PAT) you provide below.<br><br>
-        <strong>Setup steps:</strong><br>
-        1. Create a GitHub repo (public recommended for free GitHub Pages hosting).<br>
-        2. Go to <strong>github.com → Settings → Developer settings → Personal access tokens → Fine-grained tokens</strong>.<br>
-        3. Create a token with <strong>Contents: Read and Write</strong> permission for your repo.<br>
-        4. Enter your repo details and token below, then click <strong>Connect & Initialise</strong>.<br>
-        5. Deploy your site files to the same repo and enable GitHub Pages.<br><br>
-        <strong>Note:</strong> Your PAT is stored only in this browser's localStorage — it is never committed to the repo.
+        <strong>Neon + Netlify Setup</strong><br><br>
+        <span class="step-num">1</span> Go to <strong>app.neon.tech</strong>, create a project, copy the <strong>Connection string</strong> (starts with <code>postgresql://</code>).<br>
+        <span class="step-num">2</span> In <strong>Netlify → Site → Environment Variables</strong>, add:<br>
+        &nbsp;&nbsp;&nbsp;<code>DATABASE_URL</code> = your Neon connection string<br>
+        &nbsp;&nbsp;&nbsp;<code>CMS_SECRET</code> = any strong password you choose (this protects write access)<br>
+        <span class="step-num">3</span> Enter that same <code>CMS_SECRET</code> value below and click <strong>Save & Test</strong>.<br>
+        <span class="step-num">4</span> Redeploy your Netlify site (or trigger a new deploy) after adding the env vars.<br><br>
+        <strong>Note:</strong> The secret is stored only in this browser's localStorage. Tables are created automatically on first connection.
       </div>
-
-      <div style="max-width:560px;">
-        <div class="form-grid-2">
-          <div class="form-row"><label>GitHub Username / Org</label><input type="text" id="gh-owner" placeholder="your-username"></div>
-          <div class="form-row"><label>Repository Name</label><input type="text" id="gh-repo" placeholder="gce-site"></div>
+      <div style="max-width:460px;">
+        <div class="form-row">
+          <label>CMS Secret (from Netlify env vars)</label>
+          <input type="password" id="db-secret" placeholder="your-cms-secret" autocomplete="off">
         </div>
-        <div class="form-grid-2">
-          <div class="form-row"><label>Branch</label><input type="text" id="gh-branch" placeholder="main" value="main"></div>
-          <div class="form-row"><label>Personal Access Token</label><input type="password" id="gh-token" placeholder="github_pat_…" autocomplete="off"></div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;">
+          <button class="btn-primary" onclick="saveDbSettings()">Save & Test Connection</button>
+          <button class="btn-xs btn-edit" style="padding:10px 18px;" onclick="syncFromDb()">↺ Refresh Data</button>
         </div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
-          <button class="btn-primary" onclick="saveGHSettings()">Save & Test Connection</button>
-          <button class="btn-xs btn-edit" style="padding:10px 18px;" onclick="initDB()">Initialise Database (first time)</button>
-          <button class="btn-xs btn-edit" style="padding:10px 18px;" onclick="syncFromGH()">↓ Pull from GitHub</button>
-        </div>
-        <div id="gh-result" style="margin-top:16px;font-size:0.85rem;"></div>
+        <div id="db-result" style="margin-top:16px;font-size:0.85rem;min-height:20px;"></div>
       </div>
-
       <div style="margin-top:48px;padding-top:32px;border-top:1px solid rgba(255,255,255,0.08);">
         <h3 style="color:var(--cream);font-size:1rem;margin-bottom:16px;">Danger Zone</h3>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <button class="btn-xs btn-delete" style="padding:10px 18px;" onclick="clearGHConfig()">Clear GitHub Config</button>
-          <button class="btn-xs btn-delete" style="padding:10px 18px;" onclick="clearLocalCache()">Clear Local Cache</button>
-        </div>
+        <button class="btn-xs btn-delete" style="padding:10px 18px;" onclick="clearSecret()">Clear Saved Secret</button>
       </div>
     </div>
   </main>
@@ -204,11 +189,11 @@
         <div class="img-upload-zone" id="art-drop-zone" ondragover="handleDragOver(event,'art-drop-zone')" ondragleave="handleDragLeave('art-drop-zone')" ondrop="handleDrop(event,'art')">
           <input type="file" id="art-file-input" accept="image/*" onchange="handleFileSelect(event,'art')">
           <div class="img-upload-icon">🖼</div>
-          <div class="img-upload-label"><strong>Click to browse</strong> or drag & drop<br>JPG, PNG, GIF, WebP</div>
+          <div class="img-upload-label"><strong>Click to browse</strong> or drag & drop</div>
         </div>
       </div>
       <div class="img-source-panel" id="art-url-panel">
-        <input type="url" id="art-image" placeholder="https://example.com/image.jpg" oninput="previewImgFromUrl('art')">
+        <input type="url" id="art-image" placeholder="https://…" oninput="previewImgFromUrl('art')">
       </div>
       <img id="art-img-preview" class="img-preview" alt="Cover preview">
       <button type="button" class="img-clear-btn" id="art-img-clear" onclick="clearImage('art')">✕ Remove image</button>
@@ -241,7 +226,7 @@
     <input type="hidden" id="issue-id">
     <div class="form-row"><label>Issue Title</label><input type="text" id="issue-title" placeholder="e.g. Issue No. 13"></div>
     <div class="form-row"><label>Date</label><input type="date" id="issue-date"></div>
-    <div class="form-row"><label>Description / Tagline (optional)</label><input type="text" id="issue-description" placeholder="e.g. Spring Edition — Urban Life & Politics"></div>
+    <div class="form-row"><label>Description / Tagline (optional)</label><input type="text" id="issue-description"></div>
     <div class="form-actions">
       <button class="btn-xs btn-edit" onclick="closeModal('issue-modal')">Cancel</button>
       <button class="btn-primary" onclick="saveIssue()">Save Issue</button>
@@ -259,7 +244,7 @@
       <div class="form-row"><label>Full Name</label><input type="text" id="wr-name" placeholder="Writer's name"></div>
       <div class="form-row"><label>Role / Title</label><input type="text" id="wr-role" placeholder="e.g. Senior Correspondent"></div>
     </div>
-    <div class="form-row"><label>Bio</label><textarea id="wr-bio" placeholder="Writer biography…" style="min-height:140px;"></textarea></div>
+    <div class="form-row"><label>Bio</label><textarea id="wr-bio" style="min-height:140px;"></textarea></div>
     <div class="form-row">
       <label>Avatar Image (optional)</label>
       <div class="img-source-tabs">
@@ -270,11 +255,11 @@
         <div class="img-upload-zone" id="wr-drop-zone" ondragover="handleDragOver(event,'wr-drop-zone')" ondragleave="handleDragLeave('wr-drop-zone')" ondrop="handleDrop(event,'wr')">
           <input type="file" id="wr-file-input" accept="image/*" onchange="handleFileSelect(event,'wr')">
           <div class="img-upload-icon">👤</div>
-          <div class="img-upload-label"><strong>Click to browse</strong> or drag & drop<br>Recommended: square image</div>
+          <div class="img-upload-label"><strong>Click to browse</strong> or drag & drop</div>
         </div>
       </div>
       <div class="img-source-panel" id="wr-url-panel">
-        <input type="url" id="wr-avatar" placeholder="https://example.com/photo.jpg" oninput="previewImgFromUrl('wr')">
+        <input type="url" id="wr-avatar" placeholder="https://…" oninput="previewImgFromUrl('wr')">
       </div>
       <img id="wr-img-preview" class="img-preview" alt="Avatar preview">
       <button type="button" class="img-clear-btn" id="wr-img-clear" onclick="clearImage('wr')">✕ Remove image</button>
@@ -291,63 +276,58 @@
 <script src="js/core.js"></script>
 <script>
 // ─── AUTH ─────────────────────────────────────────────────────────────
-const CREDS = { user:'admin', pass:'franklinfiles2026' };
-let isLoggedIn = localStorage.getItem('gce_auth') === '1';
+const CREDS = { user:'admin', pass:'inkwell2024' };
+let isLoggedIn = localStorage.getItem('inkwell_auth') === '1';
 
 function checkAuth() {
   if (isLoggedIn) showCMS(); else document.getElementById('login-screen').style.display='flex';
 }
 function doLogin() {
   const u=document.getElementById('login-user').value.trim(), p=document.getElementById('login-pass').value;
-  if (u===CREDS.user&&p===CREDS.pass) { localStorage.setItem('gce_auth','1'); isLoggedIn=true; showCMS(); }
+  if (u===CREDS.user&&p===CREDS.pass) { localStorage.setItem('inkwell_auth','1'); isLoggedIn=true; showCMS(); }
   else document.getElementById('login-error').textContent='Incorrect username or password.';
 }
 document.getElementById('login-pass').addEventListener('keydown',e=>{ if(e.key==='Enter')doLogin(); });
-function doLogout() { localStorage.removeItem('gce_auth'); location.reload(); }
+function doLogout(){ localStorage.removeItem('inkwell_auth'); location.reload(); }
 
 async function showCMS() {
   document.getElementById('login-screen').style.display='none';
   document.getElementById('cms-app').style.display='flex';
   document.getElementById('cms-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  updateGHStatus();
-  loadGHSettingsForm();
-
-  // Load data: try GitHub first if configured, fall back to cache
-  setSavingMsg('Loading data…',true);
+  document.getElementById('db-secret').value = getCmsSecret();
+  setSaving('Loading…',true);
   try {
-    if (ghIsConfigured()) await Store.fetchFromGitHub();
+    await syncFromDb();
+    setDbStatus(true);
   } catch(e) {
-    console.warn('GitHub fetch failed, using cache:', e.message);
+    setDbStatus(false, e.message);
   } finally {
-    setSavingMsg('',false);
+    setSaving('',false);
   }
-  renderAll();
+}
+
+// ─── DB STATUS ────────────────────────────────────────────────────────
+function setDbStatus(ok, msg) {
+  ['','2'].forEach(s=>{
+    const dot=document.getElementById('db-dot'+s), txt=document.getElementById('db-status-text'+s);
+    if(!dot||!txt)return;
+    dot.className='db-dot'+(ok?' ok':' error');
+    txt.textContent=ok?'Connected':'Error'+(msg?' — '+msg.slice(0,40):'');
+  });
+  document.getElementById('dash-db-warning').style.display=ok?'none':'block';
 }
 
 // ─── SAVING OVERLAY ───────────────────────────────────────────────────
-function setSavingMsg(msg, show) {
-  document.getElementById('saving-msg').textContent = msg||'Saving to GitHub…';
-  document.getElementById('saving-overlay').classList.toggle('show', show);
+function setSaving(msg,show) {
+  document.getElementById('saving-msg').textContent=msg||'Saving…';
+  document.getElementById('saving-overlay').classList.toggle('show',show);
 }
 
-// ─── PERSIST (save data then push to GitHub) ──────────────────────────
-async function persist(data, msg) {
-  if (!ghIsConfigured()) {
-    // Just cache locally — warn the user
-    Cache.set(data);
-    showToast('Saved locally only — GitHub not configured','error');
-    return;
-  }
-  setSavingMsg('Saving to GitHub…', true);
-  try {
-    await Store.save(data, msg);
-    showToast('Saved to GitHub ✓','success');
-  } catch(e) {
-    showToast('GitHub save failed: '+e.message,'error');
-    console.error(e);
-  } finally {
-    setSavingMsg('',false);
-  }
+// ─── SYNC ─────────────────────────────────────────────────────────────
+async function syncFromDb() {
+  const data = await Store.fetchPublic();
+  renderAll();
+  return data;
 }
 
 // ─── RENDER ───────────────────────────────────────────────────────────
@@ -358,8 +338,6 @@ function renderAll() {
 function renderDashboard() {
   const data=Store.get();
   const pub=data.articles.filter(a=>a.status==='published').length;
-  const draft=data.articles.filter(a=>a.status==='draft').length;
-  document.getElementById('dash-db-warning').style.display=ghIsConfigured()?'none':'block';
   document.getElementById('dash-stats').innerHTML=`
     <div class="stat-card"><div class="stat-card-num">${data.articles.length}</div><div class="stat-card-label">Total Articles</div></div>
     <div class="stat-card"><div class="stat-card-num">${pub}</div><div class="stat-card-label">Published</div></div>
@@ -373,10 +351,8 @@ let currentFilter='all';
 function filterArticles(f,btn){
   currentFilter=f;
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderArticlesTable(f);
+  btn.classList.add('active'); renderArticlesTable(f);
 }
-
 function renderArticlesTable(filter='all'){
   const data=Store.get();
   let arts=data.articles;
@@ -390,15 +366,13 @@ function renderArticlesTable(filter='all'){
     return `<tr><td style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${a.title}</td><td><span class="badge badge-${a.type}">${a.type}</span></td><td style="font-size:0.8rem;">${issue?issue.title:'—'}</td><td>${getWriterName(a.author,data)}</td><td>${formatDate(a.date)}</td><td><span class="badge badge-${a.status==='published'?'pub':'draft'}">${a.status}</span></td><td><div class="cms-actions"><button class="btn-xs btn-edit" onclick="openArticleModal('${a.id}')">Edit</button><button class="btn-xs btn-pub" onclick="togglePublish('${a.id}')">${a.status==='published'?'Unpublish':'Publish'}</button><button class="btn-xs btn-delete" onclick="deleteArticle('${a.id}')">Delete</button></div></td></tr>`;
   }).join('')}</tbody>`;
 }
-
 function renderIssuesTable(){
   const data=Store.get(), issues=[...data.issues].sort((a,b)=>new Date(b.date)-new Date(a.date));
   document.getElementById('issues-table').innerHTML=`<thead><tr><th>Title</th><th>Date</th><th>Description</th><th>Articles</th><th>Actions</th></tr></thead><tbody>${issues.map(i=>{
     const count=data.articles.filter(a=>a.issueId===i.id).length;
-    return `<tr><td>${i.title}</td><td>${formatDate(i.date)}</td><td style="color:rgba(255,255,255,0.45);font-size:0.85rem;">${i.description||'—'}</td><td>${count} article${count!==1?'s':''}</td><td><div class="cms-actions"><button class="btn-xs btn-edit" onclick="openIssueModal('${i.id}')">Edit</button><button class="btn-xs btn-delete" onclick="deleteIssue('${i.id}')">Delete</button></div></td></tr>`;
+    return `<tr><td>${i.title}</td><td>${formatDate(i.date)}</td><td style="color:rgba(255,255,255,0.45);font-size:0.85rem;">${i.description||'—'}</td><td>${count}</td><td><div class="cms-actions"><button class="btn-xs btn-edit" onclick="openIssueModal('${i.id}')">Edit</button><button class="btn-xs btn-delete" onclick="deleteIssue('${i.id}')">Delete</button></div></td></tr>`;
   }).join('')}</tbody>`;
 }
-
 function renderWritersTable(){
   const data=Store.get();
   document.getElementById('writers-table').innerHTML=`<thead><tr><th>Name</th><th>Role</th><th>Articles</th><th>Actions</th></tr></thead><tbody>${data.writers.map(w=>{
@@ -423,7 +397,7 @@ function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 function openArticleModal(id){
   const data=Store.get();
   document.getElementById('art-author').innerHTML=data.writers.map(w=>`<option value="${w.id}">${w.name}</option>`).join('');
-  document.getElementById('art-issue').innerHTML='<option value="">— None —</option>'+[...data.issues].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(i=>`<option value="${i.id}">${i.title} (${formatDate(i.date)})</option>`).join('');
+  document.getElementById('art-issue').innerHTML='<option value="">— None —</option>'+[...data.issues].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(i=>`<option value="${i.id}">${i.title}</option>`).join('');
   if(id){
     const art=data.articles.find(a=>a.id===id); if(!art)return;
     document.getElementById('article-modal-title').textContent='Edit Article';
@@ -431,11 +405,11 @@ function openArticleModal(id){
     document.getElementById('art-type').value=art.type;
     document.getElementById('art-status').value=art.status;
     document.getElementById('art-title').value=art.title;
-    document.getElementById('art-excerpt').value=art.excerpt;
-    document.getElementById('art-author').value=art.author;
+    document.getElementById('art-excerpt').value=art.excerpt||'';
+    document.getElementById('art-author').value=art.author||'';
     document.getElementById('art-issue').value=art.issueId||'';
-    document.getElementById('art-date').value=art.date;
-    document.getElementById('art-readtime').value=art.readTime;
+    document.getElementById('art-date').value=art.date||'';
+    document.getElementById('art-readtime').value=art.readTime||5;
     document.getElementById('art-body').value=art.body||'';
     document.getElementById('art-file-input').value='';
     loadImageIntoModal('art',art.coverImage||'');
@@ -459,9 +433,9 @@ function openArticleModal(id){
 async function saveArticle(){
   const title=document.getElementById('art-title').value.trim();
   if(!title){showToast('Title is required');return;}
-  const data=Store.get(), id=document.getElementById('art-id').value;
+  const id=document.getElementById('art-id').value;
   const article={
-    id:id||'a'+Date.now(),
+    id: id||('a'+Date.now()),
     type:document.getElementById('art-type').value,
     status:document.getElementById('art-status').value,
     title,
@@ -473,36 +447,45 @@ async function saveArticle(){
     coverImage:document.getElementById('art-image-data').value,
     body:document.getElementById('art-body').value.trim()
   };
-  if(id){ const idx=data.articles.findIndex(a=>a.id===id); if(idx>=0)data.articles[idx]=article; }
-  else data.articles.unshift(article);
   closeModal('article-modal');
-  renderAll();
-  await persist(data, (id?'Update':'Add')+' article: '+title);
+  setSaving('Saving article…',true);
+  try {
+    if(id) await Store.updateArticle(id, article);
+    else   await Store.createArticle(article);
+    renderAll(); setDbStatus(true);
+    showToast(id?'Article updated ✓':'Article created ✓','success');
+  } catch(e){ showToast('Error: '+e.message,'error'); setDbStatus(false,e.message); }
+  finally{ setSaving('',false); }
 }
 
 async function togglePublish(id){
   const data=Store.get(), art=data.articles.find(a=>a.id===id); if(!art)return;
-  art.status=art.status==='published'?'draft':'published';
-  renderAll();
-  await persist(data,(art.status==='published'?'Publish':'Unpublish')+' article: '+art.title);
+  const updated={...art, status:art.status==='published'?'draft':'published'};
+  setSaving('Updating…',true);
+  try {
+    await Store.updateArticle(id,updated); renderAll(); setDbStatus(true);
+    showToast(updated.status==='published'?'Published ✓':'Unpublished','success');
+  } catch(e){ showToast('Error: '+e.message,'error'); }
+  finally{ setSaving('',false); }
 }
 
 async function deleteArticle(id){
-  if(!confirm('Delete this article? This cannot be undone.'))return;
-  const data=Store.get();
-  const title=data.articles.find(a=>a.id===id)?.title||id;
-  data.articles=data.articles.filter(a=>a.id!==id);
-  renderAll();
-  await persist(data,'Delete article: '+title);
+  if(!confirm('Delete this article?'))return;
+  setSaving('Deleting…',true);
+  try {
+    await Store.deleteArticle(id); renderAll(); setDbStatus(true);
+    showToast('Article deleted','success');
+  } catch(e){ showToast('Error: '+e.message,'error'); }
+  finally{ setSaving('',false); }
 }
 
 function openIssueModal(id){
   if(id){
-    const data=Store.get(), issue=data.issues.find(i=>i.id===id); if(!issue)return;
+    const issue=Store.get().issues.find(i=>i.id===id); if(!issue)return;
     document.getElementById('issue-modal-title').textContent='Edit Issue';
     document.getElementById('issue-id').value=issue.id;
     document.getElementById('issue-title').value=issue.title;
-    document.getElementById('issue-date').value=issue.date;
+    document.getElementById('issue-date').value=issue.date||'';
     document.getElementById('issue-description').value=issue.description||'';
   } else {
     document.getElementById('issue-modal-title').textContent='New Issue';
@@ -514,32 +497,37 @@ function openIssueModal(id){
 
 async function saveIssue(){
   const title=document.getElementById('issue-title').value.trim();
-  if(!title){showToast('Issue title is required');return;}
-  const data=Store.get(), id=document.getElementById('issue-id').value;
-  const issue={id:id||'i'+Date.now(),title,date:document.getElementById('issue-date').value,description:document.getElementById('issue-description').value.trim()};
-  if(id){ const idx=data.issues.findIndex(i=>i.id===id); if(idx>=0)data.issues[idx]=issue; } else data.issues.unshift(issue);
-  closeModal('issue-modal'); renderAll();
-  await persist(data,(id?'Update':'Add')+' issue: '+title);
+  if(!title){showToast('Title required');return;}
+  const id=document.getElementById('issue-id').value;
+  const issue={id:id||('i'+Date.now()),title,date:document.getElementById('issue-date').value,description:document.getElementById('issue-description').value.trim()};
+  closeModal('issue-modal');
+  setSaving('Saving issue…',true);
+  try {
+    if(id) await Store.updateIssue(id,issue); else await Store.createIssue(issue);
+    renderAll(); setDbStatus(true);
+    showToast(id?'Issue updated ✓':'Issue created ✓','success');
+  } catch(e){ showToast('Error: '+e.message,'error'); }
+  finally{ setSaving('',false); }
 }
 
 async function deleteIssue(id){
-  if(!confirm('Delete this issue? Articles assigned to it will become unassigned.'))return;
-  const data=Store.get();
-  const title=data.issues.find(i=>i.id===id)?.title||id;
-  data.issues=data.issues.filter(i=>i.id!==id);
-  data.articles.forEach(a=>{ if(a.issueId===id)a.issueId=''; });
-  renderAll();
-  await persist(data,'Delete issue: '+title);
+  if(!confirm('Delete this issue?'))return;
+  setSaving('Deleting…',true);
+  try {
+    await Store.deleteIssue(id); renderAll(); setDbStatus(true);
+    showToast('Issue deleted','success');
+  } catch(e){ showToast('Error: '+e.message,'error'); }
+  finally{ setSaving('',false); }
 }
 
 function openWriterModal(id){
   if(id){
-    const data=Store.get(), w=data.writers.find(w=>w.id===id); if(!w)return;
+    const w=Store.get().writers.find(w=>w.id===id); if(!w)return;
     document.getElementById('writer-modal-title').textContent='Edit Writer';
     document.getElementById('wr-id').value=w.id;
     document.getElementById('wr-name').value=w.name;
-    document.getElementById('wr-role').value=w.role;
-    document.getElementById('wr-bio').value=w.bio;
+    document.getElementById('wr-role').value=w.role||'';
+    document.getElementById('wr-bio').value=w.bio||'';
     document.getElementById('wr-file-input').value='';
     loadImageIntoModal('wr',w.avatar||'');
   } else {
@@ -556,119 +544,71 @@ function openWriterModal(id){
 
 async function saveWriter(){
   const name=document.getElementById('wr-name').value.trim();
-  if(!name){showToast('Name is required');return;}
-  const data=Store.get(), id=document.getElementById('wr-id').value;
-  const writer={id:id||'w'+Date.now(),name,role:document.getElementById('wr-role').value.trim(),bio:document.getElementById('wr-bio').value.trim(),avatar:document.getElementById('wr-image-data').value};
-  if(id){ const idx=data.writers.findIndex(w=>w.id===id); if(idx>=0)data.writers[idx]=writer; } else data.writers.push(writer);
-  closeModal('writer-modal'); renderAll();
-  await persist(data,(id?'Update':'Add')+' writer: '+name);
+  if(!name){showToast('Name required');return;}
+  const id=document.getElementById('wr-id').value;
+  const writer={id:id||('w'+Date.now()),name,role:document.getElementById('wr-role').value.trim(),bio:document.getElementById('wr-bio').value.trim(),avatar:document.getElementById('wr-image-data').value};
+  closeModal('writer-modal');
+  setSaving('Saving writer…',true);
+  try {
+    if(id) await Store.updateWriter(id,writer); else await Store.createWriter(writer);
+    renderAll(); setDbStatus(true);
+    showToast(id?'Writer updated ✓':'Writer added ✓','success');
+  } catch(e){ showToast('Error: '+e.message,'error'); }
+  finally{ setSaving('',false); }
 }
 
 async function deleteWriter(id){
   if(!confirm('Delete this writer?'))return;
-  const data=Store.get(), name=data.writers.find(w=>w.id===id)?.name||id;
-  data.writers=data.writers.filter(w=>w.id!==id);
-  renderAll();
-  await persist(data,'Delete writer: '+name);
-}
-
-// ─── GITHUB SETTINGS ─────────────────────────────────────────────────
-function updateGHStatus(){
-  const configured=ghIsConfigured();
-  const c=getGHConfig();
-  const label=configured?`${c.owner}/${c.repo}`:'Not configured';
-  ['','2'].forEach(s=>{
-    const dot=document.getElementById('gh-dot'+s), txt=document.getElementById('gh-status-text'+s);
-    if(!dot||!txt)return;
-    dot.className='gh-dot'+(configured?' connected':'');
-    txt.textContent=label;
-  });
-}
-
-function loadGHSettingsForm(){
-  const c=getGHConfig();
-  document.getElementById('gh-owner').value=c.owner||'';
-  document.getElementById('gh-repo').value=c.repo||'';
-  document.getElementById('gh-branch').value=c.branch||'main';
-  document.getElementById('gh-token').value=c.token||'';
-}
-
-async function saveGHSettings(){
-  const cfg={
-    owner:document.getElementById('gh-owner').value.trim(),
-    repo:document.getElementById('gh-repo').value.trim(),
-    branch:document.getElementById('gh-branch').value.trim()||'main',
-    token:document.getElementById('gh-token').value.trim()
-  };
-  if(!cfg.owner||!cfg.repo||!cfg.token){showToast('All fields required');return;}
-  saveGHConfig(cfg);
-  updateGHStatus();
-  const result=document.getElementById('gh-result');
-  result.textContent='Testing connection…';
-  result.style.color='rgba(255,255,255,0.4)';
-  setSavingMsg('Testing GitHub connection…',true);
+  setSaving('Deleting…',true);
   try {
-    await Store.fetchFromGitHub();
-    setSavingMsg('',false);
-    result.textContent='✓ Connected successfully! Data loaded from GitHub.';
+    await Store.deleteWriter(id); renderAll(); setDbStatus(true);
+    showToast('Writer deleted','success');
+  } catch(e){ showToast('Error: '+e.message,'error'); }
+  finally{ setSaving('',false); }
+}
+
+// ─── DATABASE SETTINGS ────────────────────────────────────────────────
+async function saveDbSettings(){
+  const secret=document.getElementById('db-secret').value.trim();
+  if(!secret){showToast('Secret is required');return;}
+  setCmsSecret(secret);
+  const result=document.getElementById('db-result');
+  result.textContent='Testing…'; result.style.color='rgba(255,255,255,0.4)';
+  setSaving('Testing connection…',true);
+  try {
+    const data=await Store.testConnection();
+    setSaving('',false);
+    result.textContent=`✓ Connected — ${data.articles.length} articles, ${data.writers.length} writers`;
     result.style.color='#6bba6b';
-    renderAll();
-    showToast('GitHub connected ✓','success');
-  } catch(e) {
-    setSavingMsg('',false);
-    if(e.message.includes('404')){
-      result.innerHTML='File <code>data/db.json</code> not found. <a href="#" onclick="initDB();return false;" style="color:var(--accent);">Initialise it now →</a>';
-      result.style.color='rgba(255,180,100,0.9)';
-    } else {
-      result.textContent='✗ '+e.message;
-      result.style.color='#e77';
-    }
+    setDbStatus(true);
+    Cache.set(data); renderAll();
+    showToast('Database connected ✓','success');
+  } catch(e){
+    setSaving('',false);
+    result.textContent='✗ '+e.message;
+    result.style.color='#e77';
+    setDbStatus(false,e.message);
   }
 }
 
-async function initDB(){
-  if(!ghIsConfigured()){showToast('Save settings first');return;}
-  if(!confirm('This will create data/db.json in your repo with the default sample content. Continue?'))return;
-  setSavingMsg('Creating database file…',true);
+async function syncFromDb(){
+  setSaving('Refreshing…',true);
   try {
-    await Store.initialize();
-    setSavingMsg('',false);
-    document.getElementById('gh-result').textContent='✓ Database initialised at data/db.json';
-    document.getElementById('gh-result').style.color='#6bba6b';
-    renderAll();
-    showToast('Database created ✓','success');
-  } catch(e) {
-    setSavingMsg('',false);
-    showToast('Init failed: '+e.message,'error');
-  }
+    const data=await Store.fetchPublic();
+    renderAll(); setDbStatus(true);
+    showToast('Data refreshed ✓','success');
+    return data;
+  } catch(e){
+    setDbStatus(false,e.message);
+    throw e;
+  } finally{ setSaving('',false); }
 }
 
-async function syncFromGH(){
-  if(!ghIsConfigured()){showToast('GitHub not configured');return;}
-  setSavingMsg('Pulling from GitHub…',true);
-  try {
-    await Store.fetchFromGitHub();
-    setSavingMsg('',false);
-    renderAll();
-    showToast('Synced from GitHub ✓','success');
-  } catch(e) {
-    setSavingMsg('',false);
-    showToast('Sync failed: '+e.message,'error');
-  }
-}
-
-function clearGHConfig(){
-  if(!confirm('Clear GitHub configuration from this browser?'))return;
-  localStorage.removeItem(GH_CONFIG_KEY);
-  loadGHSettingsForm(); updateGHStatus();
-  showToast('GitHub config cleared');
-}
-
-function clearLocalCache(){
-  if(!confirm('Clear local data cache? You will need to re-fetch from GitHub.'))return;
-  Cache.clear();
-  renderAll();
-  showToast('Cache cleared');
+function clearSecret(){
+  if(!confirm('Clear saved CMS secret from this browser?'))return;
+  localStorage.removeItem('inkwell_cms_secret');
+  document.getElementById('db-secret').value='';
+  showToast('Secret cleared');
 }
 
 // ─── IMAGE HELPERS ────────────────────────────────────────────────────
@@ -678,31 +618,20 @@ function switchImgTab(prefix,tab,btn){
   document.getElementById(prefix+'-upload-panel').classList.toggle('active',tab==='upload');
   document.getElementById(prefix+'-url-panel').classList.toggle('active',tab==='url');
 }
-function handleDragOver(e,zoneId){e.preventDefault();document.getElementById(zoneId).classList.add('dragover');}
-function handleDragLeave(zoneId){document.getElementById(zoneId).classList.remove('dragover');}
-function handleDrop(e,prefix){e.preventDefault();document.getElementById(prefix+'-drop-zone').classList.remove('dragover');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadImageFile(f,prefix);}
-function handleFileSelect(e,prefix){const f=e.target.files[0];if(f)loadImageFile(f,prefix);}
+function handleDragOver(e,z){e.preventDefault();document.getElementById(z).classList.add('dragover');}
+function handleDragLeave(z){document.getElementById(z).classList.remove('dragover');}
+function handleDrop(e,p){e.preventDefault();document.getElementById(p+'-drop-zone').classList.remove('dragover');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadImageFile(f,p);}
+function handleFileSelect(e,p){const f=e.target.files[0];if(f)loadImageFile(f,p);}
 function loadImageFile(file,prefix){
   if(file.size>2*1024*1024)showToast('Large image — compressing…');
   const reader=new FileReader();
-  reader.onload=e=>{
-    const img=new Image();
-    img.onload=()=>{
-      const canvas=document.createElement('canvas'), MAX=1200;
-      let w=img.width,h=img.height;
-      if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
-      canvas.width=w;canvas.height=h;
-      canvas.getContext('2d').drawImage(img,0,0,w,h);
-      setImageData(prefix,canvas.toDataURL('image/jpeg',0.82));
-    };
-    img.src=e.target.result;
-  };
+  reader.onload=e=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas'),M=1200;let w=img.width,h=img.height;if(w>M){h=Math.round(h*M/w);w=M;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);setImageData(prefix,c.toDataURL('image/jpeg',0.82));};img.src=e.target.result;};
   reader.readAsDataURL(file);
 }
-function previewImgFromUrl(prefix){setImageData(prefix,document.getElementById(prefix==='art'?'art-image':'wr-avatar').value.trim());}
+function previewImgFromUrl(p){setImageData(p,document.getElementById(p==='art'?'art-image':'wr-avatar').value.trim());}
 function setImageData(prefix,src){
   document.getElementById(prefix+'-image-data').value=src;
-  const preview=document.getElementById(prefix+'-img-preview'), clearBtn=document.getElementById(prefix+'-img-clear');
+  const preview=document.getElementById(prefix+'-img-preview'),clearBtn=document.getElementById(prefix+'-img-clear');
   if(src){preview.src=src;preview.classList.add('show');clearBtn.classList.add('show');}
   else{preview.src='';preview.classList.remove('show');clearBtn.classList.remove('show');}
 }
@@ -710,7 +639,7 @@ function clearImage(prefix){
   document.getElementById(prefix+'-image-data').value='';
   if(prefix==='art')document.getElementById('art-image').value='';
   if(prefix==='wr')document.getElementById('wr-avatar').value='';
-  const fi=document.getElementById(prefix+'-file-input'); if(fi)fi.value='';
+  const fi=document.getElementById(prefix+'-file-input');if(fi)fi.value='';
   setImageData(prefix,'');
 }
 function loadImageIntoModal(prefix,src){
@@ -718,31 +647,13 @@ function loadImageIntoModal(prefix,src){
   const isBase64=src.startsWith('data:');
   const modalId=prefix==='art'?'article-modal':'writer-modal';
   const tabs=document.querySelectorAll(`#${modalId} .img-source-tab`);
-  if(isBase64){
-    tabs.forEach((t,i)=>t.classList.toggle('active',i===0));
-    document.getElementById(prefix+'-upload-panel').classList.add('active');
-    document.getElementById(prefix+'-url-panel').classList.remove('active');
-  } else {
-    tabs.forEach((t,i)=>t.classList.toggle('active',i===1));
-    document.getElementById(prefix+'-upload-panel').classList.remove('active');
-    document.getElementById(prefix+'-url-panel').classList.add('active');
-    if(prefix==='art')document.getElementById('art-image').value=src;
-    if(prefix==='wr')document.getElementById('wr-avatar').value=src;
-  }
+  if(isBase64){tabs.forEach((t,i)=>t.classList.toggle('active',i===0));document.getElementById(prefix+'-upload-panel').classList.add('active');document.getElementById(prefix+'-url-panel').classList.remove('active');}
+  else{tabs.forEach((t,i)=>t.classList.toggle('active',i===1));document.getElementById(prefix+'-upload-panel').classList.remove('active');document.getElementById(prefix+'-url-panel').classList.add('active');if(prefix==='art')document.getElementById('art-image').value=src;if(prefix==='wr')document.getElementById('wr-avatar').value=src;}
   setImageData(prefix,src);
 }
-function previewImg(){}
+function wrapText(id,b,a){const ta=document.getElementById(id);const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.substring(s,e);const rep=b+(sel||'text')+a;ta.value=ta.value.substring(0,s)+rep+ta.value.substring(e);ta.focus();ta.selectionStart=s+b.length;ta.selectionEnd=s+b.length+(sel||'text').length;}
 
-// ─── MISC ─────────────────────────────────────────────────────────────
-function wrapText(textareaId,before,after){
-  const ta=document.getElementById(textareaId);
-  const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.substring(s,e);
-  const rep=before+(sel||'text')+after;
-  ta.value=ta.value.substring(0,s)+rep+ta.value.substring(e);
-  ta.focus();ta.selectionStart=s+before.length;ta.selectionEnd=s+before.length+(sel||'text').length;
-}
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
-
 checkAuth();
 </script>
 </body>

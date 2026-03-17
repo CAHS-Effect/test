@@ -1,240 +1,140 @@
-// ═══════════════════════════════════════════════════════
-//  THE GCE — Data Layer (GitHub-backed JSON database)
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+//  THE INKWELL — Data Layer (Netlify Functions + Neon Postgres)
+// ═══════════════════════════════════════════════════════════════════
 //
-//  How it works:
-//  • All data lives in `data/db.json` in your GitHub repo.
-//  • Public pages fetch it via raw.githubusercontent.com (no auth).
-//  • The CMS reads/writes via GitHub Contents API using a stored PAT.
-//  • localStorage is used as a local write-cache for instant CMS feel.
+//  All reads  → GET  /.netlify/functions/api?resource=all   (public, no auth)
+//  All writes → POST/PUT/DELETE /.netlify/functions/api     (requires CMS_SECRET)
 //
-//  PAT scope needed: `repo` (or `public_repo` for public repos)
-// ═══════════════════════════════════════════════════════
+//  CMS_SECRET is set in Netlify → Site Settings → Environment Variables.
+//  It is stored in the browser's localStorage after first login — never
+//  hardcoded here.
+// ═══════════════════════════════════════════════════════════════════
 
-const GH_CONFIG_KEY = 'gce_gh_config';
-const GH_CACHE_KEY  = 'gce_gh_cache';
-const GH_SHA_KEY    = 'gce_gh_sha';
+const API      = '/.netlify/functions/api';
+const CACHE_KEY  = 'inkwell_cache';
+const SECRET_KEY = 'inkwell_cms_secret';
 
-// ─── SITE CONFIG — set these after creating your GitHub repo ─────────
-// Hardcoding owner/repo means ANY device loads data automatically.
-// The token is never stored here — it lives in localStorage (CMS only).
-const SITE_CONFIG = {
-  owner:  'CAHS-Effect',    // e.g. 'your-github-username'
-  repo:   'test',    // e.g. 'gce-site'
-  branch: 'main'
-};
-// ─────────────────────────────────────────────────────────────────────
-
-function getGHConfig() {
-  // Merge SITE_CONFIG (public, hardcoded) with localStorage (has the token)
-  try {
-    const stored = JSON.parse(localStorage.getItem(GH_CONFIG_KEY)) || {};
-    return {
-      owner:  stored.owner  || SITE_CONFIG.owner,
-      repo:   stored.repo   || SITE_CONFIG.repo,
-      branch: stored.branch || SITE_CONFIG.branch || 'main',
-      token:  stored.token  || ''
-    };
-  } catch { return { ...SITE_CONFIG, token: '' }; }
-}
-function saveGHConfig(cfg) { localStorage.setItem(GH_CONFIG_KEY, JSON.stringify(cfg)); }
-function ghIsConfigured() {
-  const c = getGHConfig();
-  return !!(c.owner && c.repo); // token NOT required for reading a public repo
-}
-
-function rawDbUrl() {
-  const c = getGHConfig(), b = c.branch || 'main';
-  return `https://raw.githubusercontent.com/${c.owner}/${c.repo}/${b}/data/db.json`;
-}
-function apiDbUrl() {
-  const c = getGHConfig();
-  return `https://api.github.com/repos/${c.owner}/${c.repo}/contents/data/db.json`;
-}
-
-// ─── Default seed data ────────────────────────────────────────────────
-const DEFAULT_DATA = {
-  articles: [
-    {
-      id:'a1',type:'creative',status:'published',
-      title:'The Last Light of the Harbour',
-      excerpt:'A meditative essay on endings, memory, and the particular sadness of ports at dusk.',
-      body:'<p>There is a particular quality of light that exists only at the end of things. I discovered this truth standing at the edge of the harbour, watching the last cargo ship heave itself out toward the horizon, its rusted flanks catching the dying gold of a March sun.</p><p>I had come to the harbour for no particular reason — or rather, for the reason that all writers eventually arrive at: I needed to feel something real. The city behind me had grown loud with opinions and urgent with noise. The water, at least, remained honest.</p><blockquote>The sea does not care about your narrative arc. It simply continues, which is perhaps the most radical thing anything can do.</blockquote><p>A dockworker in an orange vest walked the length of the pier, checking moorings with the methodical patience of someone who has made peace with repetition. I envied him. Not his labour, but his certainty — the knowledge that the rope either held or it did not, and that you would know which by morning.</p><p>The last light touched the water and went out. The dockworker finished his rounds and lit a cigarette, looking out at exactly nothing. I walked back through the city feeling, if not lighter, then at least honestly heavy.</p>',
-      author:'w1',date:'2025-03-08',readTime:7,coverImage:'',issueId:''
-    },
-    {
-      id:'a2',type:'creative',status:'published',
-      title:'Inheritance: A Portrait in Three Kitchens',
-      excerpt:'What we inherit from the women who cooked for us, and what we fail to carry forward.',
-      body:'<p>My grandmother\'s kitchen smelled of rendered fat and old newspapers. She kept her recipes in her head, which is to say she kept her recipes nowhere. When she died, we lost the lamb stew, the plum cake, and something she called "the sour pickle."</p><p>My mother\'s kitchen smells of coffee and sunscreen. She cooks from the internet now, reading instructions from her phone propped against the fruit bowl, and though the food is good — genuinely good — there is a specific texture of confidence missing.</p><blockquote>We are the first generation to lose the recipes and know we have lost them.</blockquote><p>My own kitchen smells of whatever I burned last Tuesday. I am thirty-four years old and I still approach pastry with the terror of someone defusing something. I have five different olive oils and no idea when to use which.</p>',
-      author:'w2',date:'2025-02-20',readTime:5,coverImage:'',issueId:''
-    },
-    {
-      id:'a3',type:'news',status:'published',
-      title:'City Council Approves Waterfront Redevelopment Plan After Lengthy Debate',
-      excerpt:'The 4-3 vote clears the way for a $240 million project that opponents say will price out longtime residents.',
-      body:'<p>The city council voted narrowly Tuesday evening to approve a sweeping waterfront redevelopment plan, ending months of contentious debate over a project that supporters say will revitalise an underused industrial corridor while critics argue it will accelerate displacement in surrounding neighbourhoods.</p><p>The vote was four to three, with council member Dana Park casting the deciding vote after more than two hours of public comment that stretched well past midnight.</p><p>"This is a difficult decision and I do not make it lightly," Park said before casting her vote. "But I believe the community benefits package negotiated over the past six months represents meaningful protections for current residents."</p>',
-      author:'w3',date:'2025-03-10',readTime:4,coverImage:'',issueId:'i1'
-    },
-    {
-      id:'a4',type:'news',status:'published',
-      title:'Regional Transit Authority Announces Service Cuts Amid Budget Shortfall',
-      excerpt:'Fourteen bus routes face elimination or significant reduction starting in July as the authority grapples with a $38 million deficit.',
-      body:'<p>The Regional Transit Authority announced a sweeping package of service reductions on Thursday, citing a projected $38 million budget shortfall and declining federal operating support.</p><p>The proposed cuts would eliminate seven bus routes entirely and reduce service frequency on seven others. An estimated 12,000 daily riders use the affected routes.</p><p>"We have exhausted our ability to absorb these costs through internal efficiencies," said transit director Marlowe Chen. "The state of our budget requires that we make hard choices."</p>',
-      author:'w1',date:'2025-03-10',readTime:5,coverImage:'',issueId:'i1'
-    },
-    {
-      id:'a6',type:'creative',status:'published',
-      title:'Notes Toward an Understanding of Tuesday',
-      excerpt:'A lyric essay about the texture of ordinary time and why the middle of the week feels like a country no one has named.',
-      body:'<p>Tuesday is the most honest day of the week. Monday still carries the bruised optimism of Sunday evening; Wednesday has achieved the modest milestone of the midpoint; Thursday is already tilting toward the weekend. But Tuesday is simply itself.</p><blockquote>The middle of the week is where ordinary life actually happens, which is perhaps why writers rarely set their climaxes there.</blockquote><p>I am trying to learn to live more Tuesdays. To stop performing the arc and simply continue. To find the work that gets done in the middle of things, without ceremony, because that is mostly what a life is.</p>',
-      author:'w3',date:'2025-01-30',readTime:4,coverImage:'',issueId:''
-    }
-  ],
-  issues:[
-    {id:'i1',title:'Issue No. 12',date:'2025-03-10',description:'Spring Edition — City, Transit & the Politics of Space'},
-    {id:'i2',title:'Issue No. 11',date:'2025-02-15',description:'February Edition — Science, Climate & the Future of Food'}
-  ],
-  writers:[
-    {id:'w1',name:'Eleanor Voss',role:'Senior Correspondent',bio:'Eleanor covers urban policy and civic life with a focus on the tension between development and community. She was previously a staff writer at The Municipal Review and holds an MA in Urban Studies from NYU.',avatar:''},
-    {id:'w2',name:'James Okafor',role:'Science & Culture Editor',bio:'James writes at the intersection of science, culture, and the everyday. His essays have appeared in Granta, The Atlantic, and Best American Essays. He is the author of "The Careful Animals," a collection of narrative nonfiction.',avatar:''},
-    {id:'w3',name:'Simone Lacroix',role:'Contributing Writer',bio:'Simone is a poet and essayist whose work explores time, memory, and domestic life. Her debut essay collection was shortlisted for the Fitzcarraldo Prize.',avatar:''}
-  ]
-};
-
-// ─── Cache helpers ────────────────────────────────────────────────────
+// ─── Local cache ──────────────────────────────────────────────────────
 const Cache = {
-  get()    { try { return JSON.parse(localStorage.getItem(GH_CACHE_KEY)); } catch { return null; } },
-  set(d)   { localStorage.setItem(GH_CACHE_KEY, JSON.stringify(d)); },
-  clear()  { localStorage.removeItem(GH_CACHE_KEY); localStorage.removeItem(GH_SHA_KEY); },
-  getSHA() { return localStorage.getItem(GH_SHA_KEY) || null; },
-  setSHA(s){ localStorage.setItem(GH_SHA_KEY, s); }
+  get()    { try { return JSON.parse(localStorage.getItem(CACHE_KEY)); } catch { return null; } },
+  set(d)   { try { localStorage.setItem(CACHE_KEY, JSON.stringify(d)); } catch {} },
+  clear()  { localStorage.removeItem(CACHE_KEY); }
 };
 
-// ─── GitHub API ───────────────────────────────────────────────────────
-function ghHeaders() {
-  const c = getGHConfig();
-  return {
-    'Authorization': `Bearer ${c.token}`,
-    'Accept': 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28'
-  };
+// ─── CMS secret (stored in localStorage after first CMS login) ────────
+function getCmsSecret() { return localStorage.getItem(SECRET_KEY) || ''; }
+function setCmsSecret(s) { localStorage.setItem(SECRET_KEY, s); }
+
+// ─── API helpers ──────────────────────────────────────────────────────
+async function apiFetch(method, params, body) {
+  const url = new URL(API, window.location.origin);
+  if (params) Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  const secret = getCmsSecret();
+  if (secret) opts.headers['Authorization'] = `Bearer ${secret}`;
+  if (body)   opts.body = JSON.stringify(body);
+
+  const res = await fetch(url.toString(), opts);
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error || `API ${res.status}`);
+  return json;
 }
 
-async function ghGet() {
-  const res = await fetch(apiDbUrl(), { headers: ghHeaders() });
-  if (!res.ok) throw new Error(`GitHub error ${res.status}: ${res.statusText}`);
-  const json = await res.json();
-  const data = JSON.parse(atob(json.content.replace(/\n/g,'')));
-  Cache.setSHA(json.sha);
-  Cache.set(data);
-  return data;
-}
+// ─── Default data (shown only if DB unreachable — e.g. local dev) ─────
+const DEFAULT_DATA = {
+  articles: [], writers: [], issues: []
+};
 
-async function ghPut(data, msg) {
-  const sha = Cache.getSHA();
-  if (!sha) throw new Error('No file SHA — fetch data first.');
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
-  const c = getGHConfig();
-  const res = await fetch(apiDbUrl(), {
-    method:'PUT', headers:{ ...ghHeaders(),'Content-Type':'application/json' },
-    body: JSON.stringify({ message: msg || 'Update GCE database', content, sha, branch: c.branch||'main' })
-  });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message||`GitHub PUT ${res.status}`); }
-  const json = await res.json();
-  Cache.setSHA(json.content.sha);
-  Cache.set(data);
-  return data;
-}
-
-async function ghCreate(data) {
-  const c = getGHConfig();
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
-  const res = await fetch(apiDbUrl(), {
-    method:'PUT', headers:{ ...ghHeaders(),'Content-Type':'application/json' },
-    body: JSON.stringify({ message:'Initialize GCE database', content, branch: c.branch||'main' })
-  });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message||`GitHub create ${res.status}`); }
-  const json = await res.json();
-  Cache.setSHA(json.content.sha);
-  Cache.set(data);
-  return data;
-}
-
-// ─── Derive db.json URL automatically from current page location ─────
-// When hosted on GitHub Pages (username.github.io/repo), we can fetch
-// data/db.json relative to the site root — zero config needed on any device.
-function selfDbUrl() {
-  // Works on GitHub Pages, any static host, and local file:// with a server
-  const base = window.location.href.replace(/\/[^\/]*$/, '');
-  return base + '/data/db.json';
-}
-
-// ─── Store (the public API used by all pages) ─────────────────────────
+// ─── Store — public API used by all pages ─────────────────────────────
 const Store = {
-  get() { return Cache.get() || JSON.parse(JSON.stringify(DEFAULT_DATA)); },
-
-  async fetchFromGitHub() {
-    if (!ghIsConfigured()) throw new Error('GitHub not configured');
-    return await ghGet();
+  // Synchronous read from cache (instant, used for optimistic CMS updates)
+  get() {
+    return Cache.get() || DEFAULT_DATA;
   },
 
+  // Used by all public pages on load — fetches everything in one request
   async fetchPublic() {
-    // Strategy 1: Fetch db.json relative to the site itself.
-    // This works on ANY device with zero config — no GitHub token, no localStorage.
     try {
-      const url = selfDbUrl() + '?t=' + Date.now();
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`Self-fetch ${res.status}`);
-      const data = await res.json();
+      const data = await apiFetch('GET', { resource: 'all' });
       Cache.set(data);
-      // Also grab the SHA if we have GitHub config, for CMS writes
-      const c = getGHConfig();
-      if (c.owner && c.repo && c.token && !Cache.getSHA()) {
-        ghGet().catch(() => {}); // background fetch to warm the SHA
-      }
       return data;
-    } catch (selfErr) {
-      console.warn('Self-fetch failed:', selfErr.message);
+    } catch (e) {
+      console.warn('DB fetch failed, using cache:', e.message);
+      return Cache.get() || DEFAULT_DATA;
     }
-
-    // Strategy 2: GitHub Contents API (fallback, needs owner+repo configured)
-    if (ghIsConfigured()) {
-      const c = getGHConfig();
-      const branch = c.branch || 'main';
-      try {
-        const apiUrl = `https://api.github.com/repos/${c.owner}/${c.repo}/contents/data/db.json?ref=${branch}&t=${Date.now()}`;
-        const headers = { 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
-        if (c.token) headers['Authorization'] = `Bearer ${c.token}`;
-        const res = await fetch(apiUrl, { headers });
-        if (!res.ok) throw new Error(`GitHub API ${res.status}`);
-        const json = await res.json();
-        const data = JSON.parse(atob(json.content.replace(/\n/g, '')));
-        Cache.setSHA(json.sha);
-        Cache.set(data);
-        return data;
-      } catch (apiErr) {
-        console.warn('GitHub API fetch failed:', apiErr.message);
-      }
-    }
-
-    // Strategy 3: Local cache
-    const cached = Cache.get();
-    if (cached) { console.info('Serving from local cache'); return cached; }
-
-    console.error('Could not load db.json. Make sure data/db.json exists in your repo.');
-    return JSON.parse(JSON.stringify(DEFAULT_DATA));
   },
 
-  async save(data, msg) {
-    if (!ghIsConfigured()) throw new Error('GitHub not configured');
-    Cache.set(data);
-    return await ghPut(data, msg);
+  // ── CMS write operations ────────────────────────────────────────────
+
+  async createArticle(data) {
+    const result = await apiFetch('POST', null, { resource: 'articles', data });
+    await this._refreshCache();
+    return result;
   },
 
-  async initialize(data) {
-    if (!ghIsConfigured()) throw new Error('GitHub not configured');
-    return await ghCreate(data || JSON.parse(JSON.stringify(DEFAULT_DATA)));
+  async updateArticle(id, data) {
+    const result = await apiFetch('PUT', null, { resource: 'articles', id, data });
+    await this._refreshCache();
+    return result;
+  },
+
+  async deleteArticle(id) {
+    const result = await apiFetch('DELETE', null, { resource: 'articles', id });
+    await this._refreshCache();
+    return result;
+  },
+
+  async createWriter(data) {
+    const result = await apiFetch('POST', null, { resource: 'writers', data });
+    await this._refreshCache();
+    return result;
+  },
+
+  async updateWriter(id, data) {
+    const result = await apiFetch('PUT', null, { resource: 'writers', id, data });
+    await this._refreshCache();
+    return result;
+  },
+
+  async deleteWriter(id) {
+    const result = await apiFetch('DELETE', null, { resource: 'writers', id });
+    await this._refreshCache();
+    return result;
+  },
+
+  async createIssue(data) {
+    const result = await apiFetch('POST', null, { resource: 'issues', data });
+    await this._refreshCache();
+    return result;
+  },
+
+  async updateIssue(id, data) {
+    const result = await apiFetch('PUT', null, { resource: 'issues', id, data });
+    await this._refreshCache();
+    return result;
+  },
+
+  async deleteIssue(id) {
+    const result = await apiFetch('DELETE', null, { resource: 'issues', id });
+    await this._refreshCache();
+    return result;
+  },
+
+  // Refresh the local cache after any mutation
+  async _refreshCache() {
+    try {
+      const data = await apiFetch('GET', { resource: 'all' });
+      Cache.set(data);
+      return data;
+    } catch { return null; }
+  },
+
+  // Test the connection + auth with the CMS secret
+  async testConnection() {
+    // Public read test
+    const data = await apiFetch('GET', { resource: 'all' });
+    return data;
   },
 
   init() {} // legacy no-op
@@ -250,20 +150,20 @@ function truncate(s,max=140) { if(!s||s.length<=max)return s||''; return s.slice
 function getWriterName(id,data) { const w=data.writers.find(x=>x.id===id); return w?w.name:'Unknown'; }
 function getWriterInitials(n) { if(!n)return'?'; return n.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase(); }
 
-function showToast(msg,type) {
-  let t=document.getElementById('global-toast');
-  if(!t){t=document.createElement('div');t.id='global-toast';t.className='toast';document.body.appendChild(t);}
-  t.textContent=msg;
-  t.style.borderLeftColor=type==='error'?'#e55':type==='success'?'#6bba6b':'var(--accent)';
+function showToast(msg, type) {
+  let t = document.getElementById('global-toast');
+  if (!t) { t=document.createElement('div'); t.id='global-toast'; t.className='toast'; document.body.appendChild(t); }
+  t.textContent = msg;
+  t.style.borderLeftColor = type==='error'?'#e55': type==='success'?'#6bba6b':'var(--accent)';
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3200);
+  setTimeout(()=>t.classList.remove('show'), 3200);
 }
 
 function setupNav() {
   const navbar=document.getElementById('navbar');
   if(!navbar)return;
   window.addEventListener('scroll',()=>navbar.classList.toggle('scrolled',scrollY>20));
-  const hb=document.getElementById('hamburger'), mn=document.getElementById('mobile-nav');
+  const hb=document.getElementById('hamburger'),mn=document.getElementById('mobile-nav');
   if(hb&&mn){
     hb.addEventListener('click',()=>mn.classList.add('open'));
     document.getElementById('mobile-nav-close')?.addEventListener('click',()=>mn.classList.remove('open'));
@@ -290,7 +190,7 @@ function showPageLoader(msg) {
   if(!el){
     el=document.createElement('div');el.id='page-loader';
     el.style.cssText='position:fixed;inset:0;z-index:2000;background:var(--warm-white);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity 0.4s;';
-    el.innerHTML=`<div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;">The Gorgon + The CAHS & Effect</div><div id="page-loader-msg" style="font-size:0.8rem;color:var(--mid);letter-spacing:1px;"></div><div style="width:40px;height:2px;background:var(--border);overflow:hidden;margin-top:4px;"><div style="height:100%;background:var(--accent);animation:loaderSlide 1s ease-in-out infinite;"></div></div><style>@keyframes loaderSlide{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}</style>`;
+    el.innerHTML=`<div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;">The <span style="color:var(--accent)">Ink</span>well</div><div id="page-loader-msg" style="font-size:0.8rem;color:var(--mid);letter-spacing:1px;"></div><div style="width:40px;height:2px;background:var(--border);overflow:hidden;margin-top:4px;"><div style="height:100%;background:var(--accent);animation:loaderSlide 1s ease-in-out infinite;"></div></div><style>@keyframes loaderSlide{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}</style>`;
     document.body.appendChild(el);
   }
   document.getElementById('page-loader-msg').textContent=msg||'Loading…';

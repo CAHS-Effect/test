@@ -207,7 +207,7 @@ img { max-width: 100%; display: block; }
 .hero-stat-num {
   font-family: 'Playfair Display', serif;
   font-size: 3.5rem; font-weight: 900; line-height: 1;
-  color: var(--ink);
+  color: var(--cream);
 }
 .hero-stat-label {
   font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase;
