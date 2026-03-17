@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — The Inkwell CMS</title>
+  <title>Admin — The Gorgon + The CAHS & Effect CMS</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
     body { background: var(--ink); }
@@ -60,13 +60,12 @@
 <!-- LOGIN SCREEN -->
 <div id="login-screen" class="cms-login">
   <div class="login-box">
-    <h1>The <span style="color:var(--accent)">Ink</span>well</h1>
+    <h1>The Gorgon + The CAHS & Effect</h1>
     <p>Sign in to the content management system</p>
     <div class="form-row"><label>Username</label><input type="text" id="login-user" placeholder="admin" autocomplete="username"></div>
     <div class="form-row"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"></div>
     <button class="btn-primary" onclick="doLogin()" style="width:100%;justify-content:center;margin-top:8px;">Sign In →</button>
     <div class="login-error" id="login-error"></div>
-    <p style="font-size:0.75rem;color:rgba(255,255,255,0.2);margin-top:24px;">Default: admin / inkwell2024</p>
   </div>
 </div>
 
@@ -74,7 +73,7 @@
 <div id="cms-app" style="display:none">
   <button class="cms-mobile-toggle" onclick="toggleSidebar()">☰</button>
   <aside class="cms-sidebar" id="cms-sidebar">
-    <div class="cms-sidebar-logo"><a href="index.html" style="color:var(--cream)">The <span>Ink</span>well</a></div>
+    <div class="cms-sidebar-logo"><a href="index.html" style="color:var(--cream)">The Gorgon + The CAHS & Effect</a></div>
     <ul class="cms-nav">
       <li><a href="#" class="active" data-section="dashboard" onclick="switchSection('dashboard',this)"><span class="icon">◈</span> Dashboard</a></li>
       <li><a href="#" data-section="articles"  onclick="switchSection('articles',this)"><span class="icon">✦</span> Articles</a></li>
@@ -150,7 +149,7 @@
       <div style="max-width:560px;">
         <div class="form-grid-2">
           <div class="form-row"><label>GitHub Username / Org</label><input type="text" id="gh-owner" placeholder="your-username"></div>
-          <div class="form-row"><label>Repository Name</label><input type="text" id="gh-repo" placeholder="inkwell-site"></div>
+          <div class="form-row"><label>Repository Name</label><input type="text" id="gh-repo" placeholder="gce-site"></div>
         </div>
         <div class="form-grid-2">
           <div class="form-row"><label>Branch</label><input type="text" id="gh-branch" placeholder="main" value="main"></div>
@@ -292,19 +291,19 @@
 <script src="js/core.js"></script>
 <script>
 // ─── AUTH ─────────────────────────────────────────────────────────────
-const CREDS = { user:'admin', pass:'inkwell2024' };
-let isLoggedIn = sessionStorage.getItem('inkwell_auth') === '1';
+const CREDS = { user:'admin', pass:'franklinfiles2026' };
+let isLoggedIn = sessionStorage.getItem('gce_auth') === '1';
 
 function checkAuth() {
   if (isLoggedIn) showCMS(); else document.getElementById('login-screen').style.display='flex';
 }
 function doLogin() {
   const u=document.getElementById('login-user').value.trim(), p=document.getElementById('login-pass').value;
-  if (u===CREDS.user&&p===CREDS.pass) { sessionStorage.setItem('inkwell_auth','1'); isLoggedIn=true; showCMS(); }
+  if (u===CREDS.user&&p===CREDS.pass) { sessionStorage.setItem('gce_auth','1'); isLoggedIn=true; showCMS(); }
   else document.getElementById('login-error').textContent='Incorrect username or password.';
 }
 document.getElementById('login-pass').addEventListener('keydown',e=>{ if(e.key==='Enter')doLogin(); });
-function doLogout() { sessionStorage.removeItem('inkwell_auth'); location.reload(); }
+function doLogout() { sessionStorage.removeItem('gce_auth'); location.reload(); }
 
 async function showCMS() {
   document.getElementById('login-screen').style.display='none';
