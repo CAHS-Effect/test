@@ -19,8 +19,8 @@ const GH_SHA_KEY    = 'gce_gh_sha';
 // Hardcoding owner/repo means ANY device loads data automatically.
 // The token is never stored here — it lives in localStorage (CMS only).
 const SITE_CONFIG = {
-  owner:  '',    // e.g. 'your-github-username'
-  repo:   '',    // e.g. 'gce-site'
+  owner:  'CAHS-Effect',    // e.g. 'your-github-username'
+  repo:   'test',    // e.g. 'gce-site'
   branch: 'main'
 };
 // ─────────────────────────────────────────────────────────────────────
