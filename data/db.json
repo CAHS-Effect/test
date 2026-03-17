@@ -16,13 +16,6 @@
   ],
   "writers": [
     {
-      "id": "w2",
-      "name": "James Okafor",
-      "role": "Science & Culture Editor",
-      "bio": "James writes at the intersection of science, culture, and the everyday. His essays have appeared in Granta, The Atlantic, and Best American Essays. He is the author of \"The Careful Animals,\" a collection of narrative nonfiction.",
-      "avatar": ""
-    },
-    {
       "id": "w3",
       "name": "Simone Lacroix",
       "role": "Contributing Writer",
