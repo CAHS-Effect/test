@@ -14,13 +14,5 @@
       "description": "Description here"
     }
   ],
-  "writers": [
-    {
-      "id": "w3",
-      "name": "Simone Lacroix",
-      "role": "Contributing Writer",
-      "bio": "Simone is a poet and essayist whose work explores time, memory, and domestic life. Her debut essay collection was shortlisted for the Fitzcarraldo Prize.",
-      "avatar": ""
-    }
-  ]
+  "writers": []
 }
