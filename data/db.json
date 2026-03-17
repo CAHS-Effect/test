@@ -16,13 +16,6 @@
   ],
   "writers": [
     {
-      "id": "w1",
-      "name": "Eleanor Voss",
-      "role": "Senior Correspondent",
-      "bio": "Eleanor covers urban policy and civic life with a focus on the tension between development and community. She was previously a staff writer at The Municipal Review and holds an MA in Urban Studies from NYU.",
-      "avatar": ""
-    },
-    {
       "id": "w2",
       "name": "James Okafor",
       "role": "Science & Culture Editor",
