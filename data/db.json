@@ -6,7 +6,7 @@
       "status": "published",
       "title": "The Last Light of the Harbour",
       "excerpt": "A meditative essay on endings, memory, and the particular sadness of ports at dusk.",
-      "body": "<p>There is a particular quality of light that exists only at the end of things. I discovered this truth standing at the edge of the harbour, watching the last cargo ship heave itself out toward the horizon, its rusted flanks catching the dying gold of a March sun.</p><p>I had come to the harbour for no particular reason — or rather, for the reason that all writers eventually arrive at: I needed to feel something real. The city behind me had grown loud with opinions and urgent with noise. The water, at least, remained honest.</p><blockquote>The sea does not care about your narrative arc. It simply continues, which is perhaps the most radical thing anything can do.</blockquote><p>A dockworker in an orange vest walked the length of the pier, checking moorings with the methodical patience of someone who has made peace with repetition. I envied him. Not his labour, but his certainty — the knowledge that the rope either held or it did not, and that you would know which by morning.</p><p>The last light touched the water and went out. The dockworker finished his rounds and lit a cigarette, looking out at exactly nothing. I walked back through the city feeling, if not lighter, then at least honestly heavy.</p>",
+      "body": "<p>There is a particular quality of light that exists only at the end of things. I discovered this truth standing at the edge of the harbour, watching the last cargo ship heave itself out toward the horizon, its rusted flanks catching the dying gold of a March sun.</p><p>I had come to the harbour for no particular reason â or rather, for the reason that all writers eventually arrive at: I needed to feel something real. The city behind me had grown loud with opinions and urgent with noise. The water, at least, remained honest.</p><blockquote>The sea does not care about your narrative arc. It simply continues, which is perhaps the most radical thing anything can do.</blockquote><p>A dockworker in an orange vest walked the length of the pier, checking moorings with the methodical patience of someone who has made peace with repetition. I envied him. Not his labour, but his certainty â the knowledge that the rope either held or it did not, and that you would know which by morning.</p><p>The last light touched the water and went out. The dockworker finished his rounds and lit a cigarette, looking out at exactly nothing. I walked back through the city feeling, if not lighter, then at least honestly heavy.</p>",
       "author": "w1",
       "date": "2025-03-08",
       "readTime": 7,
@@ -19,25 +19,12 @@
       "status": "published",
       "title": "Inheritance: A Portrait in Three Kitchens",
       "excerpt": "What we inherit from the women who cooked for us, and what we fail to carry forward.",
-      "body": "<p>My grandmother's kitchen smelled of rendered fat and old newspapers. She kept her recipes in her head, which is to say she kept her recipes nowhere. When she died, we lost the lamb stew, the plum cake, and something she called \"the sour pickle.\"</p><p>My mother's kitchen smells of coffee and sunscreen. She cooks from the internet now, reading instructions from her phone propped against the fruit bowl, and though the food is good — genuinely good — there is a specific texture of confidence missing.</p><blockquote>We are the first generation to lose the recipes and know we have lost them.</blockquote><p>My own kitchen smells of whatever I burned last Tuesday. I am thirty-four years old and I still approach pastry with the terror of someone defusing something. I have five different olive oils and no idea when to use which.</p>",
+      "body": "<p>My grandmother's kitchen smelled of rendered fat and old newspapers. She kept her recipes in her head, which is to say she kept her recipes nowhere. When she died, we lost the lamb stew, the plum cake, and something she called \"the sour pickle.\"</p><p>My mother's kitchen smells of coffee and sunscreen. She cooks from the internet now, reading instructions from her phone propped against the fruit bowl, and though the food is good â genuinely good â there is a specific texture of confidence missing.</p><blockquote>We are the first generation to lose the recipes and know we have lost them.</blockquote><p>My own kitchen smells of whatever I burned last Tuesday. I am thirty-four years old and I still approach pastry with the terror of someone defusing something. I have five different olive oils and no idea when to use which.</p>",
       "author": "w2",
       "date": "2025-02-20",
       "readTime": 5,
       "coverImage": "",
       "issueId": ""
-    },
-    {
-      "id": "a3",
-      "type": "news",
-      "status": "published",
-      "title": "City Council Approves Waterfront Redevelopment Plan After Lengthy Debate",
-      "excerpt": "The 4-3 vote clears the way for a $240 million project that opponents say will price out longtime residents.",
-      "body": "<p>The city council voted narrowly Tuesday evening to approve a sweeping waterfront redevelopment plan, ending months of contentious debate over a project that supporters say will revitalise an underused industrial corridor while critics argue it will accelerate displacement in surrounding neighbourhoods.</p><p>The vote was four to three, with council member Dana Park casting the deciding vote after more than two hours of public comment that stretched well past midnight.</p><p>\"This is a difficult decision and I do not make it lightly,\" Park said before casting her vote. \"But I believe the community benefits package negotiated over the past six months represents meaningful protections for current residents.\"</p>",
-      "author": "w3",
-      "date": "2025-03-10",
-      "readTime": 4,
-      "coverImage": "",
-      "issueId": "i1"
     },
     {
       "id": "a4",
@@ -71,13 +58,13 @@
       "id": "i1",
       "title": "Issue No. 12",
       "date": "2025-03-10",
-      "description": "Spring Edition — City, Transit & the Politics of Space"
+      "description": "Spring Edition â City, Transit & the Politics of Space"
     },
     {
       "id": "i2",
       "title": "Issue No. 11",
       "date": "2025-02-15",
-      "description": "February Edition — Science, Climate & the Future of Food"
+      "description": "February Edition â Science, Climate & the Future of Food"
     }
   ],
   "writers": [
