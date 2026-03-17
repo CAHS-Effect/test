@@ -1,6 +1,19 @@
 {
   "articles": [
     {
+      "id": "a1773762662888",
+      "type": "creative",
+      "status": "draft",
+      "title": "Ode to Mazur",
+      "excerpt": "Ode",
+      "author": "w1773762590006",
+      "issueId": "",
+      "date": "2026-03-17",
+      "readTime": 5,
+      "coverImage": "",
+      "body": "This class is kinda bum"
+    },
+    {
       "id": "a1773762634201",
       "type": "news",
       "status": "draft",
