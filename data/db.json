@@ -1,13 +1,6 @@
 {
   "articles": [],
-  "issues": [
-    {
-      "id": "i2",
-      "title": "Issue No. 11",
-      "date": "2025-02-15",
-      "description": "February Edition â Science, Climate & the Future of Food"
-    }
-  ],
+  "issues": [],
   "writers": [
     {
       "id": "w1",
