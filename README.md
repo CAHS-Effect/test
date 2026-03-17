@@ -1,4 +1,4 @@
-# The Inkwell — Journalism Website
+# The CAHS &amp; Effect — Journalism Website
 
 A modern, mobile-ready journalism website with CMS, built as a static site for GitHub Pages deployment.
 
@@ -59,7 +59,7 @@ All content is stored in the browser's `localStorage`. This means:
 ## Customisation
 
 ### Change publication name
-Search and replace `The Inkwell` across all HTML files.
+Search and replace `The CAHS &amp; Effect` across all HTML files.
 
 ### Change accent colour
 In `css/style.css`, update `--accent: #c8392b;`
