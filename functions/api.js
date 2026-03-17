@@ -8,7 +8,7 @@
 //    CMS_SECRET   — protects write endpoints
 // ═══════════════════════════════════════════════════════════════════
 
-import { createClient } from '@libsql/client/web';
+import { createClient } from '@libsql/client';
 
 // ─── CORS ─────────────────────────────────────────────────────────────
 const CORS = {
