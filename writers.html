@@ -1,168 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Our Writers — The Gorgon + The CAHS & Effect</title>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Writers — The Inkwell</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    .writer-profile {
-      display: grid; grid-template-columns: 280px 1fr; gap: 64px;
-      padding: 64px 0; border-bottom: 1px solid var(--border);
-      scroll-margin-top: calc(var(--nav-height) + 32px);
-    }
-    .writer-profile:last-child { border-bottom: none; }
-    .writer-profile-left { text-align: center; }
-    .writer-profile-avatar {
-      width: 180px; height: 180px; border-radius: 50%;
-      margin: 0 auto 24px;
-      background: var(--cream);
-      overflow: hidden; border: 3px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Playfair Display', serif;
-      font-size: 3.5rem; font-weight: 700; color: var(--mid);
-    }
-    .writer-profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .writer-profile-name { font-size: 1.5rem; font-weight: 700; margin-bottom: 6px; }
-    .writer-profile-role {
-      font-size: 0.75rem; color: var(--accent);
-      letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px;
-    }
-    .writer-profile-right { padding-top: 8px; }
-    .writer-profile-bio { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; line-height: 1.9; color: var(--ink); margin-bottom: 32px; }
-    .writer-articles h4 { font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); margin-bottom: 16px; }
-    .writer-article-list { list-style: none; }
-    .writer-article-list li { padding: 12px 0; border-bottom: 1px solid var(--border); }
-    .writer-article-list li:last-child { border-bottom: none; }
-    .writer-article-list a { font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
-    .writer-article-list a:hover { color: var(--accent); }
-    .writer-article-list .meta { font-size: 0.78rem; color: var(--mid); margin-top: 2px; }
-    @media(max-width:768px) {
-      .writer-profile { grid-template-columns: 1fr; gap: 32px; }
-      .writer-profile-left { display: flex; flex-direction: column; align-items: center; }
-    }
+    .writer-profile{display:grid;grid-template-columns:280px 1fr;gap:64px;padding:64px 0;border-bottom:1px solid var(--border);scroll-margin-top:calc(var(--nav-height) + 32px);}
+    .writer-profile:last-child{border-bottom:none;}
+    .writer-profile-left{text-align:center;}
+    .writer-profile-avatar{width:180px;height:180px;border-radius:50%;margin:0 auto 24px;background:var(--cream);overflow:hidden;border:3px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:3.5rem;font-weight:700;color:var(--mid);}
+    .writer-profile-avatar img{width:100%;height:100%;object-fit:cover;}
+    .writer-profile-name{font-size:1.5rem;font-weight:700;margin-bottom:6px;}
+    .writer-profile-role{font-size:0.75rem;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:20px;}
+    .writer-profile-bio{font-family:'Cormorant Garamond',serif;font-size:1.1rem;line-height:1.9;color:var(--ink);margin-bottom:32px;}
+    .writer-articles h4{font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--mid);margin-bottom:16px;}
+    .writer-article-list{list-style:none;}
+    .writer-article-list li{padding:12px 0;border-bottom:1px solid var(--border);}
+    .writer-article-list li:last-child{border-bottom:none;}
+    .writer-article-list a{font-size:0.95rem;font-weight:500;transition:color 0.2s;}
+    .writer-article-list a:hover{color:var(--accent);}
+    .writer-article-list .meta{font-size:0.78rem;color:var(--mid);margin-top:2px;}
+    @media(max-width:768px){.writer-profile{grid-template-columns:1fr;gap:32px;}.writer-profile-left{display:flex;flex-direction:column;align-items:center;}}
   </style>
 </head>
 <body>
-<nav id="navbar">
-  <div class="nav-inner">
-    <a href="index.html" class="nav-logo">The <span>Ink</span>well</a>
-    <ul class="nav-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="creative.html">Creative</a></li>
-      <li><a href="news.html">News</a></li>
-      <li><a href="writers.html">Writers</a></li>
-      <li><a href="cms.html" class="nav-cta">Admin</a></li>
-    </ul>
-    <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
-  </div>
-</nav>
-<div class="mobile-nav" id="mobile-nav">
-  <span class="mobile-nav-close" id="mobile-nav-close">✕</span>
-  <a href="index.html">Home</a>
-  <a href="creative.html">Creative</a>
-  <a href="news.html">News</a>
-  <a href="writers.html">Writers</a>
-  <a href="cms.html">Admin</a>
+<nav id="navbar"><div class="nav-inner">
+  <a href="index.html" class="nav-logo">The <span>Ink</span>well</a>
+  <ul class="nav-links"><li><a href="index.html">Home</a></li><li><a href="creative.html">Creative</a></li><li><a href="news.html">News</a></li><li><a href="writers.html">Writers</a></li><li><a href="cms.html" class="nav-cta">Admin</a></li></ul>
+  <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
+</div></nav>
+<div class="mobile-nav" id="mobile-nav"><span class="mobile-nav-close" id="mobile-nav-close">✕</span>
+  <a href="index.html">Home</a><a href="creative.html">Creative</a><a href="news.html">News</a><a href="writers.html">Writers</a><a href="cms.html">Admin</a>
 </div>
-
 <div class="page">
-  <div class="page-hero">
-    <div class="container">
-      <div class="ornament">The Gorgon + The CAHS & Effect</div>
-      <h1>Our Writers</h1>
-      <p>The voices behind the words — independent, committed, and endlessly curious.</p>
-    </div>
-  </div>
-
-  <section class="section">
-    <div class="container">
-      <div id="writers-list"></div>
-      <div id="writers-empty" style="display:none;text-align:center;padding:80px 0;">
-        <p style="color:var(--mid)">No writer profiles added yet.</p>
-      </div>
-    </div>
-  </section>
+  <div class="page-hero"><div class="container"><div class="ornament">The Inkwell</div><h1>Our Writers</h1><p>The voices behind the words — independent, committed, and endlessly curious.</p></div></div>
+  <section class="section"><div class="container">
+    <div id="writers-list"></div>
+    <div id="writers-empty" style="display:none;text-align:center;padding:80px 0;"><p style="color:var(--mid)">No writer profiles added yet.</p></div>
+  </div></section>
 </div>
-
-<footer>
-  <div class="container">
-    <div class="footer-grid">
-      <div>
-        <div class="footer-logo">The Gorgon + The CAHS & Effect</div>
-        <p class="footer-desc">Independent writing that takes its time.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Sections</h4>
-        <ul>
-          <li><a href="creative.html">Creative Writing</a></li>
-          <li><a href="news.html">News & Issues</a></li>
-          <li><a href="writers.html">Our Writers</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Admin</h4>
-        <ul><li><a href="cms.html">Content Manager</a></li></ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span>© <span id="footer-year"></span> The Gorgon + The CAHS & Effect.</span>
-    </div>
+<footer><div class="container">
+  <div class="footer-grid">
+    <div><div class="footer-logo">The <span>Ink</span>well</div><p class="footer-desc">Independent writing that takes its time.</p></div>
+    <div class="footer-col"><h4>Sections</h4><ul><li><a href="creative.html">Creative Writing</a></li><li><a href="news.html">News & Issues</a></li><li><a href="writers.html">Our Writers</a></li></ul></div>
+    <div class="footer-col"><h4>Admin</h4><ul><li><a href="cms.html">Content Manager</a></li></ul></div>
   </div>
-</footer>
-
+  <div class="footer-bottom"><span>© <span id="footer-year"></span> The Inkwell.</span></div>
+</div></footer>
 <div class="toast" id="global-toast"></div>
 <script src="js/core.js"></script>
 <script>
-  Store.init(); setupNav();
+  setupNav();
   document.getElementById('footer-year').textContent = new Date().getFullYear();
-  const data = Store.get();
-
-  if (!data.writers.length) {
-    document.getElementById('writers-empty').style.display = 'block';
-  } else {
-    const html = data.writers.map(w => {
-      const articles = data.articles.filter(a => a.author === w.id && a.status === 'published')
-        .sort((a,b) => new Date(b.date) - new Date(a.date));
-      const artList = articles.length
-        ? `<div class="writer-articles">
-            <h4>Published Work</h4>
-            <ul class="writer-article-list">
-              ${articles.map(a => `
-                <li>
-                  <a href="article.html?id=${a.id}">${a.title}</a>
-                  <div class="meta">${formatDate(a.date)} · ${a.type === 'creative' ? 'Essay' : 'News'} · ${a.readTime} min read</div>
-                </li>`).join('')}
-            </ul>
-          </div>`
-        : '';
-      return `
-        <div class="writer-profile reveal" id="writer-${w.id}">
-          <div class="writer-profile-left">
-            <div class="writer-profile-avatar">
-              ${w.avatar ? `<img src="${w.avatar}" alt="${w.name}">` : getWriterInitials(w.name)}
-            </div>
-            <div class="writer-profile-name">${w.name}</div>
-            <div class="writer-profile-role">${w.role}</div>
-          </div>
-          <div class="writer-profile-right">
-            <p class="writer-profile-bio">${w.bio}</p>
-            ${artList}
-          </div>
-        </div>`;
+  showPageLoader('Loading writers…');
+  Store.fetchPublic().then(data => {
+    hidePageLoader();
+    if (!data.writers.length) { document.getElementById('writers-empty').style.display='block'; return; }
+    document.getElementById('writers-list').innerHTML=data.writers.map(w=>{
+      const articles=data.articles.filter(a=>a.author===w.id&&a.status==='published').sort((a,b)=>new Date(b.date)-new Date(a.date));
+      const artList=articles.length?`<div class="writer-articles"><h4>Published Work</h4><ul class="writer-article-list">${articles.map(a=>`<li><a href="article.html?id=${a.id}">${a.title}</a><div class="meta">${formatDate(a.date)} · ${a.type==='creative'?'Essay':'News'} · ${a.readTime} min read</div></li>`).join('')}</ul></div>`:'';
+      return `<div class="writer-profile reveal" id="writer-${w.id}"><div class="writer-profile-left"><div class="writer-profile-avatar">${w.avatar?`<img src="${w.avatar}" alt="${w.name}">`:getWriterInitials(w.name)}</div><div class="writer-profile-name">${w.name}</div><div class="writer-profile-role">${w.role}</div></div><div class="writer-profile-right"><p class="writer-profile-bio">${w.bio}</p>${artList}</div></div>`;
     }).join('');
-    document.getElementById('writers-list').innerHTML = html;
-  }
-
-  setupReveal();
-
-  // Scroll to anchor if hash
-  if (window.location.hash) {
-    setTimeout(() => {
-      const el = document.querySelector(window.location.hash);
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    }, 300);
-  }
+    setupReveal();
+    if (window.location.hash) { setTimeout(()=>{ const el=document.querySelector(window.location.hash); if(el)el.scrollIntoView({behavior:'smooth'}); },300); }
+  }).catch(err=>{ hidePageLoader(); console.error(err); });
 </script>
-</body>
-</html>
+</body></html>

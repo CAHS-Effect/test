@@ -1,134 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>News — The Gorgon + The CAHS & Effect</title>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News — The Inkwell</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<nav id="navbar">
-  <div class="nav-inner">
-    <a href="index.html" class="nav-logo">The Gorgon + The CAHS & Effect</a>
-    <ul class="nav-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="creative.html">Creative</a></li>
-      <li><a href="news.html">News</a></li>
-      <li><a href="writers.html">Writers</a></li>
-      <li><a href="cms.html" class="nav-cta">Admin</a></li>
-    </ul>
-    <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
-  </div>
-</nav>
-<div class="mobile-nav" id="mobile-nav">
-  <span class="mobile-nav-close" id="mobile-nav-close">✕</span>
-  <a href="index.html">Home</a>
-  <a href="creative.html">Creative</a>
-  <a href="news.html">News</a>
-  <a href="writers.html">Writers</a>
-  <a href="cms.html">Admin</a>
+<nav id="navbar"><div class="nav-inner">
+  <a href="index.html" class="nav-logo">The <span>Ink</span>well</a>
+  <ul class="nav-links"><li><a href="index.html">Home</a></li><li><a href="creative.html">Creative</a></li><li><a href="news.html">News</a></li><li><a href="writers.html">Writers</a></li><li><a href="cms.html" class="nav-cta">Admin</a></li></ul>
+  <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
+</div></nav>
+<div class="mobile-nav" id="mobile-nav"><span class="mobile-nav-close" id="mobile-nav-close">✕</span>
+  <a href="index.html">Home</a><a href="creative.html">Creative</a><a href="news.html">News</a><a href="writers.html">Writers</a><a href="cms.html">Admin</a>
 </div>
-
 <div class="page">
-  <div class="page-hero">
-    <div class="container">
-      <div class="ornament">The Gorgon + The CAHS & Effect</div>
-      <h1>News & Issues</h1>
-      <p>Reported journalism, organised by issue — each edition a snapshot of the moment it was published.</p>
-    </div>
-  </div>
-
-  <section class="section">
-    <div class="container">
-      <!-- Unassigned news first -->
-      <div id="news-unassigned"></div>
-      <!-- Issues -->
-      <div id="news-issues"></div>
-      <div id="news-empty" style="display:none;text-align:center;padding:80px 0;">
-        <p style="color:var(--mid);font-size:1.1rem;">No news articles published yet.</p>
-      </div>
-    </div>
-  </section>
+  <div class="page-hero"><div class="container"><div class="ornament">The Inkwell</div><h1>News & Issues</h1><p>Reported journalism, organised by issue — each edition a snapshot of the moment it was published.</p></div></div>
+  <section class="section"><div class="container">
+    <div id="news-unassigned"></div>
+    <div id="news-issues"></div>
+    <div id="news-empty" style="display:none;text-align:center;padding:80px 0;"><p style="color:var(--mid);font-size:1.1rem;">No news articles published yet.</p></div>
+  </div></section>
 </div>
-
-<footer>
-  <div class="container">
-    <div class="footer-grid">
-      <div>
-        <div class="footer-logo">The Gorgon + The CAHS & Effect</div>
-        <p class="footer-desc">Independent writing that takes its time.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Sections</h4>
-        <ul>
-          <li><a href="creative.html">Creative Writing</a></li>
-          <li><a href="news.html">News & Issues</a></li>
-          <li><a href="writers.html">Our Writers</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Admin</h4>
-        <ul><li><a href="cms.html">Content Manager</a></li></ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span>© <span id="footer-year"></span> The Gorgon + The CAHS & Effect.</span>
-      <span>Independent Publishing</span>
-    </div>
+<footer><div class="container">
+  <div class="footer-grid">
+    <div><div class="footer-logo">The <span>Ink</span>well</div><p class="footer-desc">Independent writing that takes its time.</p></div>
+    <div class="footer-col"><h4>Sections</h4><ul><li><a href="creative.html">Creative Writing</a></li><li><a href="news.html">News & Issues</a></li><li><a href="writers.html">Our Writers</a></li></ul></div>
+    <div class="footer-col"><h4>Admin</h4><ul><li><a href="cms.html">Content Manager</a></li></ul></div>
   </div>
-</footer>
-
+  <div class="footer-bottom"><span>© <span id="footer-year"></span> The Inkwell.</span></div>
+</div></footer>
 <div class="toast" id="global-toast"></div>
 <script src="js/core.js"></script>
 <script>
-  Store.init(); setupNav();
+  setupNav();
   document.getElementById('footer-year').textContent = new Date().getFullYear();
-  const data = Store.get();
-  const newsAll = data.articles.filter(a => a.type === 'news' && a.status === 'published')
-    .sort((a,b) => new Date(b.date) - new Date(a.date));
-
-  if (!newsAll.length) {
-    document.getElementById('news-empty').style.display = 'block';
-  } else {
-    // Sort issues newest first
-    const issues = [...data.issues].sort((a,b) => new Date(b.date) - new Date(a.date));
-
-    // Unassigned articles
-    const unassigned = newsAll.filter(a => !a.issueId || !data.issues.find(i => i.id === a.issueId));
+  showPageLoader('Loading news…');
+  Store.fetchPublic().then(data => {
+    hidePageLoader();
+    const newsAll=data.articles.filter(a=>a.type==='news'&&a.status==='published').sort((a,b)=>new Date(b.date)-new Date(a.date));
+    if (!newsAll.length) { document.getElementById('news-empty').style.display='block'; return; }
+    const issues=[...data.issues].sort((a,b)=>new Date(b.date)-new Date(a.date));
+    const unassigned=newsAll.filter(a=>!a.issueId||!data.issues.find(i=>i.id===a.issueId));
     if (unassigned.length) {
-      document.getElementById('news-unassigned').innerHTML = `
-        <div class="issue-block reveal">
-          <div class="issue-header">
-            <div class="issue-number" style="background:var(--accent)">+</div>
-            <div class="issue-info">
-              <h3>Recent Articles</h3>
-              <span>Not assigned to a specific issue</span>
-            </div>
-          </div>
-          <div class="articles-grid">${unassigned.map(a => buildArticleCard(a, data)).join('')}</div>
-        </div>`;
+      document.getElementById('news-unassigned').innerHTML=`<div class="issue-block reveal"><div class="issue-header"><div class="issue-number" style="background:var(--accent)">+</div><div class="issue-info"><h3>Recent Articles</h3><span>Not assigned to a specific issue</span></div></div><div class="articles-grid">${unassigned.map(a=>buildArticleCard(a,data)).join('')}</div></div>`;
     }
-
-    // Issues
-    const issueHTML = issues.map((issue, idx) => {
-      const arts = newsAll.filter(a => a.issueId === issue.id);
+    document.getElementById('news-issues').innerHTML=issues.map((issue,idx)=>{
+      const arts=newsAll.filter(a=>a.issueId===issue.id);
       if (!arts.length) return '';
-      return `
-        <div class="issue-block reveal">
-          <div class="issue-header">
-            <div class="issue-number">${String(idx + 1).padStart(2,'0')}</div>
-            <div class="issue-info">
-              <h3>${issue.title}</h3>
-              <span>${formatDate(issue.date)}${issue.description ? ' — ' + issue.description : ''}</span>
-            </div>
-          </div>
-          <div class="articles-grid">${arts.map(a => buildArticleCard(a, data)).join('')}</div>
-        </div>`;
+      return `<div class="issue-block reveal"><div class="issue-header"><div class="issue-number">${String(idx+1).padStart(2,'0')}</div><div class="issue-info"><h3>${issue.title}</h3><span>${formatDate(issue.date)}${issue.description?' — '+issue.description:''}</span></div></div><div class="articles-grid">${arts.map(a=>buildArticleCard(a,data)).join('')}</div></div>`;
     }).join('');
-    document.getElementById('news-issues').innerHTML = issueHTML;
-  }
-
-  setupReveal();
+    setupReveal();
+  }).catch(err=>{ hidePageLoader(); console.error(err); });
 </script>
-</body>
-</html>
+</body></html>

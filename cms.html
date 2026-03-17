@@ -3,105 +3,111 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — The Gorgon + The CAHS & Effect CMS</title>
+  <title>Admin — The Inkwell CMS</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
     body { background: var(--ink); }
     .cms-page { display: flex; }
-    .img-preview {
-      margin-top: 10px; max-height: 120px; max-width: 100%;
-      border: 1px solid rgba(255,255,255,0.1);
-      display: none;
-    }
-    .img-preview.show { display: block; }
-    .toolbar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
-    .toolbar button {
-      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
-      color: rgba(255,255,255,0.6); padding: 4px 10px; font-size: 0.78rem;
-      cursor: pointer; font-family: 'DM Sans', sans-serif;
-      transition: all 0.2s;
-    }
-    .toolbar button:hover { background: rgba(255,255,255,0.15); color: #fff; }
-    .cms-mobile-toggle {
-      display: none; position: fixed; top: 16px; left: 16px; z-index: 9001;
-      background: var(--accent); color: #fff; border: none; padding: 8px 14px;
-      font-size: 1.2rem; cursor: pointer;
-    }
-    @media(max-width:768px) {
-      .cms-mobile-toggle { display: block; }
-    }
-    .tab-bar {
-      display: flex; gap: 0; border-bottom: 1px solid rgba(255,255,255,0.08);
-      margin-bottom: 32px;
-    }
-    .tab-btn {
-      padding: 12px 20px; font-size: 0.82rem; letter-spacing: 0.5px;
-      background: none; border: none; cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      color: rgba(255,255,255,0.4); transition: all 0.2s;
-      border-bottom: 2px solid transparent; margin-bottom: -1px;
-    }
-    .tab-btn.active { color: #fff; border-bottom-color: var(--accent); }
-    .tab-btn:hover { color: rgba(255,255,255,0.75); }
+    .img-preview { margin-top:10px;max-height:140px;max-width:100%;border:1px solid rgba(255,255,255,0.1);object-fit:cover;display:none; }
+    .img-preview.show { display:block; }
+    .img-upload-zone { border:1px dashed rgba(255,255,255,0.18);padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;transition:border-color 0.2s,background 0.2s;position:relative; }
+    .img-upload-zone:hover,.img-upload-zone.dragover { border-color:var(--accent);background:rgba(200,57,43,0.06); }
+    .img-upload-zone input[type="file"] { position:absolute;inset:0;opacity:0;cursor:pointer;width:100%; }
+    .img-upload-label { font-size:0.8rem;color:rgba(255,255,255,0.4);text-align:center;pointer-events:none; }
+    .img-upload-label strong { color:var(--accent); }
+    .img-upload-icon { font-size:1.6rem;pointer-events:none; }
+    .img-source-tabs { display:flex;gap:0;margin-bottom:8px; }
+    .img-source-tab { padding:6px 16px;font-size:0.75rem;letter-spacing:0.5px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);cursor:pointer;color:rgba(255,255,255,0.4);font-family:'DM Sans',sans-serif;transition:all 0.2s; }
+    .img-source-tab:first-child { border-right:none; }
+    .img-source-tab.active { background:rgba(200,57,43,0.15);color:var(--accent);border-color:var(--accent); }
+    .img-source-panel { display:none; }
+    .img-source-panel.active { display:block; }
+    .img-clear-btn { margin-top:8px;font-size:0.72rem;color:rgba(255,255,255,0.3);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:color 0.2s;display:none; }
+    .img-clear-btn.show { display:inline-block; }
+    .img-clear-btn:hover { color:var(--accent); }
+    .toolbar { display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px; }
+    .toolbar button { background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s; }
+    .toolbar button:hover { background:rgba(255,255,255,0.15);color:#fff; }
+    .cms-mobile-toggle { display:none;position:fixed;top:16px;left:16px;z-index:9001;background:var(--accent);color:#fff;border:none;padding:8px 14px;font-size:1.2rem;cursor:pointer; }
+    @media(max-width:768px){.cms-mobile-toggle{display:block;}}
+    .tab-bar { display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:32px; }
+    .tab-btn { padding:12px 20px;font-size:0.82rem;letter-spacing:0.5px;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;color:rgba(255,255,255,0.4);transition:all 0.2s;border-bottom:2px solid transparent;margin-bottom:-1px; }
+    .tab-btn.active { color:#fff;border-bottom-color:var(--accent); }
+    .tab-btn:hover { color:rgba(255,255,255,0.75); }
+    /* GitHub settings panel */
+    .gh-status { display:inline-flex;align-items:center;gap:8px;font-size:0.8rem;padding:6px 12px;border:1px solid rgba(255,255,255,0.1); }
+    .gh-dot { width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2); }
+    .gh-dot.connected { background:#6bba6b; }
+    .gh-dot.error { background:#e55; }
+    .info-box { background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);padding:20px 24px;font-size:0.85rem;color:rgba(255,255,255,0.5);line-height:1.8;margin-bottom:28px; }
+    .info-box strong { color:rgba(255,255,255,0.75); }
+    .info-box code { font-family:monospace;background:rgba(255,255,255,0.08);padding:1px 6px;font-size:0.82rem;color:var(--accent); }
+    .saving-overlay { display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.6);backdrop-filter:blur(3px);align-items:center;justify-content:center;flex-direction:column;gap:16px; }
+    .saving-overlay.show { display:flex; }
+    .saving-spinner { width:36px;height:36px;border:3px solid rgba(255,255,255,0.1);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite; }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .saving-msg { color:rgba(255,255,255,0.6);font-size:0.88rem;letter-spacing:0.5px; }
   </style>
 </head>
 <body>
 
+<!-- SAVING OVERLAY -->
+<div class="saving-overlay" id="saving-overlay">
+  <div class="saving-spinner"></div>
+  <div class="saving-msg" id="saving-msg">Saving to GitHub…</div>
+</div>
+
 <!-- LOGIN SCREEN -->
 <div id="login-screen" class="cms-login">
   <div class="login-box">
-    <h1>The Gorgon + The CAHS & Effect</h1>
+    <h1>The <span style="color:var(--accent)">Ink</span>well</h1>
     <p>Sign in to the content management system</p>
-    <div class="form-row">
-      <label>Username</label>
-      <input type="text" id="login-user" placeholder="admin" autocomplete="username">
-    </div>
-    <div class="form-row">
-      <label>Password</label>
-      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
-    </div>
+    <div class="form-row"><label>Username</label><input type="text" id="login-user" placeholder="admin" autocomplete="username"></div>
+    <div class="form-row"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"></div>
     <button class="btn-primary" onclick="doLogin()" style="width:100%;justify-content:center;margin-top:8px;">Sign In →</button>
     <div class="login-error" id="login-error"></div>
+    <p style="font-size:0.75rem;color:rgba(255,255,255,0.2);margin-top:24px;">Default: admin / inkwell2024</p>
   </div>
 </div>
 
-<!-- CMS MAIN -->
+<!-- CMS APP -->
 <div id="cms-app" style="display:none">
   <button class="cms-mobile-toggle" onclick="toggleSidebar()">☰</button>
-
   <aside class="cms-sidebar" id="cms-sidebar">
-    <div class="cms-sidebar-logo">
-      <a href="index.html" style="color:var(--cream)">The Gorgon + The CAHS & Effect</a>
-    </div>
+    <div class="cms-sidebar-logo"><a href="index.html" style="color:var(--cream)">The <span>Ink</span>well</a></div>
     <ul class="cms-nav">
       <li><a href="#" class="active" data-section="dashboard" onclick="switchSection('dashboard',this)"><span class="icon">◈</span> Dashboard</a></li>
-      <li><a href="#" data-section="articles" onclick="switchSection('articles',this)"><span class="icon">✦</span> Articles</a></li>
-      <li><a href="#" data-section="issues" onclick="switchSection('issues',this)"><span class="icon">◉</span> News Issues</a></li>
-      <li><a href="#" data-section="writers" onclick="switchSection('writers',this)"><span class="icon">◎</span> Writers</a></li>
-      <li style="margin-top:auto;padding-top:40px;">
-        <a href="#" onclick="doLogout()"><span class="icon">⊘</span> Sign Out</a>
-      </li>
+      <li><a href="#" data-section="articles"  onclick="switchSection('articles',this)"><span class="icon">✦</span> Articles</a></li>
+      <li><a href="#" data-section="issues"    onclick="switchSection('issues',this)"><span class="icon">◉</span> News Issues</a></li>
+      <li><a href="#" data-section="writers"   onclick="switchSection('writers',this)"><span class="icon">◎</span> Writers</a></li>
+      <li><a href="#" data-section="settings"  onclick="switchSection('settings',this)"><span class="icon">⚙</span> GitHub DB</a></li>
+      <li style="margin-top:auto;padding-top:40px;"><a href="#" onclick="doLogout()"><span class="icon">⊘</span> Sign Out</a></li>
     </ul>
   </aside>
 
   <main class="cms-main">
+
     <!-- DASHBOARD -->
     <div class="cms-section active" id="section-dashboard">
       <div class="cms-topbar">
         <h1>Dashboard</h1>
-        <div style="font-size:0.8rem;color:rgba(255,255,255,0.3);" id="cms-date"></div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="gh-status" id="gh-status-badge"><div class="gh-dot" id="gh-dot"></div><span id="gh-status-text">Not configured</span></div>
+          <div style="font-size:0.8rem;color:rgba(255,255,255,0.3);" id="cms-date"></div>
+        </div>
+      </div>
+      <div id="dash-db-warning" style="display:none;background:rgba(200,57,43,0.12);border:1px solid rgba(200,57,43,0.3);padding:16px 20px;margin-bottom:28px;font-size:0.88rem;color:rgba(255,255,255,0.7);">
+        ⚠ GitHub database not configured. Changes will be lost when you close the browser.
+        <a href="#" onclick="switchSection('settings',document.querySelector('[data-section=settings]'));return false;" style="color:var(--accent);margin-left:8px;">Set up now →</a>
       </div>
       <div class="stats-row" id="dash-stats"></div>
-      <h3 style="color:var(--cream);font-size:1rem;font-weight:600;margin-bottom:20px;letter-spacing:0.5px;">Recent Articles</h3>
+      <h3 style="color:var(--cream);font-size:1rem;font-weight:600;margin-bottom:20px;">Recent Articles</h3>
       <table class="cms-table" id="dash-recent"></table>
     </div>
 
     <!-- ARTICLES -->
     <div class="cms-section" id="section-articles">
-      <div class="cms-topbar">
-        <h1>Articles</h1>
-        <button class="btn-primary" onclick="openArticleModal()">+ New Article</button>
-      </div>
+      <div class="cms-topbar"><h1>Articles</h1><button class="btn-primary" onclick="openArticleModal()">+ New Article</button></div>
       <div class="tab-bar">
         <button class="tab-btn active" onclick="filterArticles('all',this)">All</button>
         <button class="tab-btn" onclick="filterArticles('creative',this)">Creative</button>
@@ -114,20 +120,57 @@
 
     <!-- ISSUES -->
     <div class="cms-section" id="section-issues">
-      <div class="cms-topbar">
-        <h1>News Issues</h1>
-        <button class="btn-primary" onclick="openIssueModal()">+ New Issue</button>
-      </div>
+      <div class="cms-topbar"><h1>News Issues</h1><button class="btn-primary" onclick="openIssueModal()">+ New Issue</button></div>
       <table class="cms-table" id="issues-table"></table>
     </div>
 
     <!-- WRITERS -->
     <div class="cms-section" id="section-writers">
-      <div class="cms-topbar">
-        <h1>Writers</h1>
-        <button class="btn-primary" onclick="openWriterModal()">+ New Writer</button>
-      </div>
+      <div class="cms-topbar"><h1>Writers</h1><button class="btn-primary" onclick="openWriterModal()">+ New Writer</button></div>
       <table class="cms-table" id="writers-table"></table>
+    </div>
+
+    <!-- GITHUB SETTINGS -->
+    <div class="cms-section" id="section-settings">
+      <div class="cms-topbar"><h1>GitHub Database</h1><div class="gh-status" id="gh-status-badge2"><div class="gh-dot" id="gh-dot2"></div><span id="gh-status-text2">Not configured</span></div></div>
+
+      <div class="info-box">
+        <strong>How it works</strong><br>
+        All articles, writers, and issues are stored in a <code>data/db.json</code> file in your GitHub repository.
+        Public pages load data from GitHub's CDN — no server needed. The CMS writes back via the GitHub API using a Personal Access Token (PAT) you provide below.<br><br>
+        <strong>Setup steps:</strong><br>
+        1. Create a GitHub repo (public recommended for free GitHub Pages hosting).<br>
+        2. Go to <strong>github.com → Settings → Developer settings → Personal access tokens → Fine-grained tokens</strong>.<br>
+        3. Create a token with <strong>Contents: Read and Write</strong> permission for your repo.<br>
+        4. Enter your repo details and token below, then click <strong>Connect & Initialise</strong>.<br>
+        5. Deploy your site files to the same repo and enable GitHub Pages.<br><br>
+        <strong>Note:</strong> Your PAT is stored only in this browser's localStorage — it is never committed to the repo.
+      </div>
+
+      <div style="max-width:560px;">
+        <div class="form-grid-2">
+          <div class="form-row"><label>GitHub Username / Org</label><input type="text" id="gh-owner" placeholder="your-username"></div>
+          <div class="form-row"><label>Repository Name</label><input type="text" id="gh-repo" placeholder="inkwell-site"></div>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-row"><label>Branch</label><input type="text" id="gh-branch" placeholder="main" value="main"></div>
+          <div class="form-row"><label>Personal Access Token</label><input type="password" id="gh-token" placeholder="github_pat_…" autocomplete="off"></div>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
+          <button class="btn-primary" onclick="saveGHSettings()">Save & Test Connection</button>
+          <button class="btn-xs btn-edit" style="padding:10px 18px;" onclick="initDB()">Initialise Database (first time)</button>
+          <button class="btn-xs btn-edit" style="padding:10px 18px;" onclick="syncFromGH()">↓ Pull from GitHub</button>
+        </div>
+        <div id="gh-result" style="margin-top:16px;font-size:0.85rem;"></div>
+      </div>
+
+      <div style="margin-top:48px;padding-top:32px;border-top:1px solid rgba(255,255,255,0.08);">
+        <h3 style="color:var(--cream);font-size:1rem;margin-bottom:16px;">Danger Zone</h3>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn-xs btn-delete" style="padding:10px 18px;" onclick="clearGHConfig()">Clear GitHub Config</button>
+          <button class="btn-xs btn-delete" style="padding:10px 18px;" onclick="clearLocalCache()">Clear Local Cache</button>
+        </div>
+      </div>
     </div>
   </main>
 </div>
@@ -139,55 +182,38 @@
     <h2 id="article-modal-title">New Article</h2>
     <input type="hidden" id="art-id">
     <div class="form-grid-2">
-      <div class="form-row">
-        <label>Type</label>
-        <select id="art-type">
-          <option value="creative">Creative Writing</option>
-          <option value="news">News Article</option>
-        </select>
-      </div>
-      <div class="form-row">
-        <label>Status</label>
-        <select id="art-status">
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-        </select>
-      </div>
+      <div class="form-row"><label>Type</label><select id="art-type"><option value="creative">Creative Writing</option><option value="news">News Article</option></select></div>
+      <div class="form-row"><label>Status</label><select id="art-status"><option value="draft">Draft</option><option value="published">Published</option></select></div>
     </div>
-    <div class="form-row">
-      <label>Title</label>
-      <input type="text" id="art-title" placeholder="Article headline…">
-    </div>
-    <div class="form-row">
-      <label>Excerpt</label>
-      <input type="text" id="art-excerpt" placeholder="Short summary or dek…">
+    <div class="form-row"><label>Title</label><input type="text" id="art-title" placeholder="Article headline…"></div>
+    <div class="form-row"><label>Excerpt</label><input type="text" id="art-excerpt" placeholder="Short summary or dek…"></div>
+    <div class="form-grid-2">
+      <div class="form-row"><label>Author</label><select id="art-author"></select></div>
+      <div class="form-row"><label>News Issue (news only)</label><select id="art-issue"><option value="">— None —</option></select></div>
     </div>
     <div class="form-grid-2">
-      <div class="form-row">
-        <label>Author</label>
-        <select id="art-author"></select>
-      </div>
-      <div class="form-row">
-        <label>News Issue (news only)</label>
-        <select id="art-issue">
-          <option value="">— None —</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-grid-2">
-      <div class="form-row">
-        <label>Publication Date</label>
-        <input type="date" id="art-date">
-      </div>
-      <div class="form-row">
-        <label>Read Time (minutes)</label>
-        <input type="number" id="art-readtime" value="5" min="1" max="60">
-      </div>
+      <div class="form-row"><label>Publication Date</label><input type="date" id="art-date"></div>
+      <div class="form-row"><label>Read Time (minutes)</label><input type="number" id="art-readtime" value="5" min="1" max="60"></div>
     </div>
     <div class="form-row">
-      <label>Cover Image URL (optional)</label>
-      <input type="url" id="art-image" placeholder="https://…" oninput="previewImg('art-image','art-img-preview')">
-      <img id="art-img-preview" class="img-preview" alt="Preview">
+      <label>Cover Image (optional)</label>
+      <div class="img-source-tabs">
+        <button type="button" class="img-source-tab active" onclick="switchImgTab('art','upload',this)">⬆ Upload File</button>
+        <button type="button" class="img-source-tab" onclick="switchImgTab('art','url',this)">🔗 Image URL</button>
+      </div>
+      <div class="img-source-panel active" id="art-upload-panel">
+        <div class="img-upload-zone" id="art-drop-zone" ondragover="handleDragOver(event,'art-drop-zone')" ondragleave="handleDragLeave('art-drop-zone')" ondrop="handleDrop(event,'art')">
+          <input type="file" id="art-file-input" accept="image/*" onchange="handleFileSelect(event,'art')">
+          <div class="img-upload-icon">🖼</div>
+          <div class="img-upload-label"><strong>Click to browse</strong> or drag & drop<br>JPG, PNG, GIF, WebP</div>
+        </div>
+      </div>
+      <div class="img-source-panel" id="art-url-panel">
+        <input type="url" id="art-image" placeholder="https://example.com/image.jpg" oninput="previewImgFromUrl('art')">
+      </div>
+      <img id="art-img-preview" class="img-preview" alt="Cover preview">
+      <button type="button" class="img-clear-btn" id="art-img-clear" onclick="clearImage('art')">✕ Remove image</button>
+      <input type="hidden" id="art-image-data">
     </div>
     <div class="form-row">
       <label>Body (HTML supported)</label>
@@ -214,18 +240,9 @@
     <button class="modal-close" onclick="closeModal('issue-modal')">✕</button>
     <h2 id="issue-modal-title">New Issue</h2>
     <input type="hidden" id="issue-id">
-    <div class="form-row">
-      <label>Issue Title</label>
-      <input type="text" id="issue-title" placeholder="e.g. Issue No. 13">
-    </div>
-    <div class="form-row">
-      <label>Date</label>
-      <input type="date" id="issue-date">
-    </div>
-    <div class="form-row">
-      <label>Description / Tagline (optional)</label>
-      <input type="text" id="issue-description" placeholder="e.g. Spring Edition — Urban Life & Politics">
-    </div>
+    <div class="form-row"><label>Issue Title</label><input type="text" id="issue-title" placeholder="e.g. Issue No. 13"></div>
+    <div class="form-row"><label>Date</label><input type="date" id="issue-date"></div>
+    <div class="form-row"><label>Description / Tagline (optional)</label><input type="text" id="issue-description" placeholder="e.g. Spring Edition — Urban Life & Politics"></div>
     <div class="form-actions">
       <button class="btn-xs btn-edit" onclick="closeModal('issue-modal')">Cancel</button>
       <button class="btn-primary" onclick="saveIssue()">Save Issue</button>
@@ -240,23 +257,29 @@
     <h2 id="writer-modal-title">New Writer</h2>
     <input type="hidden" id="wr-id">
     <div class="form-grid-2">
-      <div class="form-row">
-        <label>Full Name</label>
-        <input type="text" id="wr-name" placeholder="Writer's name">
-      </div>
-      <div class="form-row">
-        <label>Role / Title</label>
-        <input type="text" id="wr-role" placeholder="e.g. Senior Correspondent">
-      </div>
+      <div class="form-row"><label>Full Name</label><input type="text" id="wr-name" placeholder="Writer's name"></div>
+      <div class="form-row"><label>Role / Title</label><input type="text" id="wr-role" placeholder="e.g. Senior Correspondent"></div>
     </div>
+    <div class="form-row"><label>Bio</label><textarea id="wr-bio" placeholder="Writer biography…" style="min-height:140px;"></textarea></div>
     <div class="form-row">
-      <label>Bio</label>
-      <textarea id="wr-bio" placeholder="Writer biography…" style="min-height:140px;"></textarea>
-    </div>
-    <div class="form-row">
-      <label>Avatar Image URL (optional)</label>
-      <input type="url" id="wr-avatar" placeholder="https://…" oninput="previewImg('wr-avatar','wr-img-preview')">
-      <img id="wr-img-preview" class="img-preview" alt="Preview">
+      <label>Avatar Image (optional)</label>
+      <div class="img-source-tabs">
+        <button type="button" class="img-source-tab active" onclick="switchImgTab('wr','upload',this)">⬆ Upload File</button>
+        <button type="button" class="img-source-tab" onclick="switchImgTab('wr','url',this)">🔗 Image URL</button>
+      </div>
+      <div class="img-source-panel active" id="wr-upload-panel">
+        <div class="img-upload-zone" id="wr-drop-zone" ondragover="handleDragOver(event,'wr-drop-zone')" ondragleave="handleDragLeave('wr-drop-zone')" ondrop="handleDrop(event,'wr')">
+          <input type="file" id="wr-file-input" accept="image/*" onchange="handleFileSelect(event,'wr')">
+          <div class="img-upload-icon">👤</div>
+          <div class="img-upload-label"><strong>Click to browse</strong> or drag & drop<br>Recommended: square image</div>
+        </div>
+      </div>
+      <div class="img-source-panel" id="wr-url-panel">
+        <input type="url" id="wr-avatar" placeholder="https://example.com/photo.jpg" oninput="previewImgFromUrl('wr')">
+      </div>
+      <img id="wr-img-preview" class="img-preview" alt="Avatar preview">
+      <button type="button" class="img-clear-btn" id="wr-img-clear" onclick="clearImage('wr')">✕ Remove image</button>
+      <input type="hidden" id="wr-image-data">
     </div>
     <div class="form-actions">
       <button class="btn-xs btn-edit" onclick="closeModal('writer-modal')">Cancel</button>
@@ -268,419 +291,459 @@
 <div class="toast" id="global-toast"></div>
 <script src="js/core.js"></script>
 <script>
-// ─── AUTH ────────────────────────────────────
-const CREDS = { user: 'admin', pass: 'franklinfiles2026' };
-let isLoggedIn = sessionStorage.getItem('gce_auth') === '1';
+// ─── AUTH ─────────────────────────────────────────────────────────────
+const CREDS = { user:'admin', pass:'inkwell2024' };
+let isLoggedIn = sessionStorage.getItem('inkwell_auth') === '1';
 
 function checkAuth() {
-  if (isLoggedIn) { showCMS(); } else { document.getElementById('login-screen').style.display = 'flex'; }
+  if (isLoggedIn) showCMS(); else document.getElementById('login-screen').style.display='flex';
+}
+function doLogin() {
+  const u=document.getElementById('login-user').value.trim(), p=document.getElementById('login-pass').value;
+  if (u===CREDS.user&&p===CREDS.pass) { sessionStorage.setItem('inkwell_auth','1'); isLoggedIn=true; showCMS(); }
+  else document.getElementById('login-error').textContent='Incorrect username or password.';
+}
+document.getElementById('login-pass').addEventListener('keydown',e=>{ if(e.key==='Enter')doLogin(); });
+function doLogout() { sessionStorage.removeItem('inkwell_auth'); location.reload(); }
+
+async function showCMS() {
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('cms-app').style.display='flex';
+  document.getElementById('cms-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  updateGHStatus();
+  loadGHSettingsForm();
+
+  // Load data: try GitHub first if configured, fall back to cache
+  setSavingMsg('Loading data…',true);
+  try {
+    if (ghIsConfigured()) await Store.fetchFromGitHub();
+  } catch(e) {
+    console.warn('GitHub fetch failed, using cache:', e.message);
+  } finally {
+    setSavingMsg('',false);
+  }
+  renderAll();
 }
 
-function doLogin() {
-  const u = document.getElementById('login-user').value.trim();
-  const p = document.getElementById('login-pass').value;
-  if (u === CREDS.user && p === CREDS.pass) {
-    sessionStorage.setItem('gce_auth','1');
-    isLoggedIn = true;
-    showCMS();
-  } else {
-    document.getElementById('login-error').textContent = 'Incorrect username or password.';
+// ─── SAVING OVERLAY ───────────────────────────────────────────────────
+function setSavingMsg(msg, show) {
+  document.getElementById('saving-msg').textContent = msg||'Saving to GitHub…';
+  document.getElementById('saving-overlay').classList.toggle('show', show);
+}
+
+// ─── PERSIST (save data then push to GitHub) ──────────────────────────
+async function persist(data, msg) {
+  if (!ghIsConfigured()) {
+    // Just cache locally — warn the user
+    Cache.set(data);
+    showToast('Saved locally only — GitHub not configured','error');
+    return;
+  }
+  setSavingMsg('Saving to GitHub…', true);
+  try {
+    await Store.save(data, msg);
+    showToast('Saved to GitHub ✓','success');
+  } catch(e) {
+    showToast('GitHub save failed: '+e.message,'error');
+    console.error(e);
+  } finally {
+    setSavingMsg('',false);
   }
 }
 
-document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-
-function doLogout() {
-  sessionStorage.removeItem('gce_auth');
-  location.reload();
-}
-
-function showCMS() {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('cms-app').style.display = 'flex';
-  Store.init();
-  renderAll();
-  document.getElementById('cms-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-}
-
-// ─── RENDER ──────────────────────────────────
+// ─── RENDER ───────────────────────────────────────────────────────────
 function renderAll() {
-  renderDashboard();
-  renderArticlesTable('all');
-  renderIssuesTable();
-  renderWritersTable();
+  renderDashboard(); renderArticlesTable('all'); renderIssuesTable(); renderWritersTable();
 }
 
 function renderDashboard() {
-  const data = Store.get();
-  const pub = data.articles.filter(a=>a.status==='published').length;
-  const draft = data.articles.filter(a=>a.status==='draft').length;
-  const news = data.articles.filter(a=>a.type==='news').length;
-  const creative = data.articles.filter(a=>a.type==='creative').length;
-
-  document.getElementById('dash-stats').innerHTML = `
+  const data=Store.get();
+  const pub=data.articles.filter(a=>a.status==='published').length;
+  const draft=data.articles.filter(a=>a.status==='draft').length;
+  document.getElementById('dash-db-warning').style.display=ghIsConfigured()?'none':'block';
+  document.getElementById('dash-stats').innerHTML=`
     <div class="stat-card"><div class="stat-card-num">${data.articles.length}</div><div class="stat-card-label">Total Articles</div></div>
     <div class="stat-card"><div class="stat-card-num">${pub}</div><div class="stat-card-label">Published</div></div>
     <div class="stat-card"><div class="stat-card-num">${data.issues.length}</div><div class="stat-card-label">News Issues</div></div>
     <div class="stat-card"><div class="stat-card-num">${data.writers.length}</div><div class="stat-card-label">Writers</div></div>`;
-
-  const recent = [...data.articles].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
-  document.getElementById('dash-recent').innerHTML = `
-    <thead><tr>
-      <th>Title</th><th>Type</th><th>Author</th><th>Date</th><th>Status</th>
-    </tr></thead>
-    <tbody>${recent.map(a=>`
-      <tr>
-        <td><a href="article.html?id=${a.id}" style="color:var(--cream)">${a.title}</a></td>
-        <td><span class="badge badge-${a.type}">${a.type}</span></td>
-        <td>${getWriterName(a.author, data)}</td>
-        <td>${formatDate(a.date)}</td>
-        <td><span class="badge badge-${a.status==='published'?'pub':'draft'}">${a.status}</span></td>
-      </tr>`).join('')}
-    </tbody>`;
+  const recent=[...data.articles].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+  document.getElementById('dash-recent').innerHTML=`<thead><tr><th>Title</th><th>Type</th><th>Author</th><th>Date</th><th>Status</th></tr></thead><tbody>${recent.map(a=>`<tr><td><a href="article.html?id=${a.id}" style="color:var(--cream)">${a.title}</a></td><td><span class="badge badge-${a.type}">${a.type}</span></td><td>${getWriterName(a.author,data)}</td><td>${formatDate(a.date)}</td><td><span class="badge badge-${a.status==='published'?'pub':'draft'}">${a.status}</span></td></tr>`).join('')}</tbody>`;
 }
 
-let currentArticleFilter = 'all';
-
-function filterArticles(filter, btn) {
-  currentArticleFilter = filter;
+let currentFilter='all';
+function filterArticles(f,btn){
+  currentFilter=f;
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  renderArticlesTable(filter);
+  renderArticlesTable(f);
 }
 
-function renderArticlesTable(filter = 'all') {
-  const data = Store.get();
-  let arts = data.articles;
-  if (filter === 'creative') arts = arts.filter(a=>a.type==='creative');
-  else if (filter === 'news') arts = arts.filter(a=>a.type==='news');
-  else if (filter === 'published') arts = arts.filter(a=>a.status==='published');
-  else if (filter === 'draft') arts = arts.filter(a=>a.status==='draft');
-  arts = [...arts].sort((a,b)=>new Date(b.date)-new Date(a.date));
-
-  document.getElementById('articles-table').innerHTML = `
-    <thead><tr>
-      <th>Title</th><th>Type</th><th>Issue</th><th>Author</th><th>Date</th><th>Status</th><th>Actions</th>
-    </tr></thead>
-    <tbody>${arts.map(a=>{
-      const issue = a.issueId ? data.issues.find(i=>i.id===a.issueId) : null;
-      return `<tr>
-        <td style="max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${a.title}</td>
-        <td><span class="badge badge-${a.type}">${a.type}</span></td>
-        <td style="font-size:0.8rem;">${issue ? issue.title : '—'}</td>
-        <td>${getWriterName(a.author, data)}</td>
-        <td>${formatDate(a.date)}</td>
-        <td><span class="badge badge-${a.status==='published'?'pub':'draft'}">${a.status}</span></td>
-        <td>
-          <div class="cms-actions">
-            <button class="btn-xs btn-edit" onclick="openArticleModal('${a.id}')">Edit</button>
-            <button class="btn-xs btn-pub" onclick="togglePublish('${a.id}')">${a.status==='published'?'Unpublish':'Publish'}</button>
-            <button class="btn-xs btn-delete" onclick="deleteArticle('${a.id}')">Delete</button>
-          </div>
-        </td>
-      </tr>`;
-    }).join('')}
-    </tbody>`;
+function renderArticlesTable(filter='all'){
+  const data=Store.get();
+  let arts=data.articles;
+  if(filter==='creative')arts=arts.filter(a=>a.type==='creative');
+  else if(filter==='news')arts=arts.filter(a=>a.type==='news');
+  else if(filter==='published')arts=arts.filter(a=>a.status==='published');
+  else if(filter==='draft')arts=arts.filter(a=>a.status==='draft');
+  arts=[...arts].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  document.getElementById('articles-table').innerHTML=`<thead><tr><th>Title</th><th>Type</th><th>Issue</th><th>Author</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody>${arts.map(a=>{
+    const issue=a.issueId?data.issues.find(i=>i.id===a.issueId):null;
+    return `<tr><td style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${a.title}</td><td><span class="badge badge-${a.type}">${a.type}</span></td><td style="font-size:0.8rem;">${issue?issue.title:'—'}</td><td>${getWriterName(a.author,data)}</td><td>${formatDate(a.date)}</td><td><span class="badge badge-${a.status==='published'?'pub':'draft'}">${a.status}</span></td><td><div class="cms-actions"><button class="btn-xs btn-edit" onclick="openArticleModal('${a.id}')">Edit</button><button class="btn-xs btn-pub" onclick="togglePublish('${a.id}')">${a.status==='published'?'Unpublish':'Publish'}</button><button class="btn-xs btn-delete" onclick="deleteArticle('${a.id}')">Delete</button></div></td></tr>`;
+  }).join('')}</tbody>`;
 }
 
-function renderIssuesTable() {
-  const data = Store.get();
-  const issues = [...data.issues].sort((a,b)=>new Date(b.date)-new Date(a.date));
-  document.getElementById('issues-table').innerHTML = `
-    <thead><tr><th>Title</th><th>Date</th><th>Description</th><th>Articles</th><th>Actions</th></tr></thead>
-    <tbody>${issues.map(i=>{
-      const count = data.articles.filter(a=>a.issueId===i.id).length;
-      return `<tr>
-        <td>${i.title}</td>
-        <td>${formatDate(i.date)}</td>
-        <td style="color:rgba(255,255,255,0.45);font-size:0.85rem;">${i.description||'—'}</td>
-        <td>${count} article${count!==1?'s':''}</td>
-        <td>
-          <div class="cms-actions">
-            <button class="btn-xs btn-edit" onclick="openIssueModal('${i.id}')">Edit</button>
-            <button class="btn-xs btn-delete" onclick="deleteIssue('${i.id}')">Delete</button>
-          </div>
-        </td>
-      </tr>`;
-    }).join('')}
-    </tbody>`;
+function renderIssuesTable(){
+  const data=Store.get(), issues=[...data.issues].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  document.getElementById('issues-table').innerHTML=`<thead><tr><th>Title</th><th>Date</th><th>Description</th><th>Articles</th><th>Actions</th></tr></thead><tbody>${issues.map(i=>{
+    const count=data.articles.filter(a=>a.issueId===i.id).length;
+    return `<tr><td>${i.title}</td><td>${formatDate(i.date)}</td><td style="color:rgba(255,255,255,0.45);font-size:0.85rem;">${i.description||'—'}</td><td>${count} article${count!==1?'s':''}</td><td><div class="cms-actions"><button class="btn-xs btn-edit" onclick="openIssueModal('${i.id}')">Edit</button><button class="btn-xs btn-delete" onclick="deleteIssue('${i.id}')">Delete</button></div></td></tr>`;
+  }).join('')}</tbody>`;
 }
 
-function renderWritersTable() {
-  const data = Store.get();
-  document.getElementById('writers-table').innerHTML = `
-    <thead><tr><th>Name</th><th>Role</th><th>Articles</th><th>Actions</th></tr></thead>
-    <tbody>${data.writers.map(w=>{
-      const count = data.articles.filter(a=>a.author===w.id).length;
-      return `<tr>
-        <td>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;flex-shrink:0;">
-              ${w.avatar?`<img src="${w.avatar}" style="width:100%;height:100%;object-fit:cover;">`:getWriterInitials(w.name)}
-            </div>
-            ${w.name}
-          </div>
-        </td>
-        <td style="font-size:0.85rem;color:rgba(255,255,255,0.5);">${w.role}</td>
-        <td>${count}</td>
-        <td>
-          <div class="cms-actions">
-            <button class="btn-xs btn-edit" onclick="openWriterModal('${w.id}')">Edit</button>
-            <button class="btn-xs btn-delete" onclick="deleteWriter('${w.id}')">Delete</button>
-          </div>
-        </td>
-      </tr>`;
-    }).join('')}
-    </tbody>`;
+function renderWritersTable(){
+  const data=Store.get();
+  document.getElementById('writers-table').innerHTML=`<thead><tr><th>Name</th><th>Role</th><th>Articles</th><th>Actions</th></tr></thead><tbody>${data.writers.map(w=>{
+    const count=data.articles.filter(a=>a.author===w.id).length;
+    return `<tr><td><div style="display:flex;align-items:center;gap:10px;"><div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;flex-shrink:0;">${w.avatar?`<img src="${w.avatar}" style="width:100%;height:100%;object-fit:cover;">`:getWriterInitials(w.name)}</div>${w.name}</div></td><td style="font-size:0.85rem;color:rgba(255,255,255,0.5);">${w.role}</td><td>${count}</td><td><div class="cms-actions"><button class="btn-xs btn-edit" onclick="openWriterModal('${w.id}')">Edit</button><button class="btn-xs btn-delete" onclick="deleteWriter('${w.id}')">Delete</button></div></td></tr>`;
+  }).join('')}</tbody>`;
 }
 
-// ─── SECTION SWITCHING ───────────────────────
-function switchSection(name, link) {
+// ─── SECTION SWITCHING ────────────────────────────────────────────────
+function switchSection(name,link){
   document.querySelectorAll('.cms-section').forEach(s=>s.classList.remove('active'));
   document.getElementById('section-'+name).classList.add('active');
   document.querySelectorAll('.cms-nav a').forEach(a=>a.classList.remove('active'));
   link.classList.add('active');
   document.getElementById('cms-sidebar').classList.remove('mobile-open');
 }
+function toggleSidebar(){ document.getElementById('cms-sidebar').classList.toggle('mobile-open'); }
 
-function toggleSidebar() {
-  document.getElementById('cms-sidebar').classList.toggle('mobile-open');
-}
+// ─── MODALS ───────────────────────────────────────────────────────────
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 
-// ─── MODALS ──────────────────────────────────
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-}
-
-function openArticleModal(id) {
-  const data = Store.get();
-  // Populate selects
-  const authorSel = document.getElementById('art-author');
-  authorSel.innerHTML = data.writers.map(w=>`<option value="${w.id}">${w.name}</option>`).join('');
-  const issueSel = document.getElementById('art-issue');
-  issueSel.innerHTML = '<option value="">— None —</option>' +
-    data.issues.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(i=>`<option value="${i.id}">${i.title} (${formatDate(i.date)})</option>`).join('');
-
-  if (id) {
-    const art = data.articles.find(a=>a.id===id);
-    if (!art) return;
-    document.getElementById('article-modal-title').textContent = 'Edit Article';
-    document.getElementById('art-id').value = art.id;
-    document.getElementById('art-type').value = art.type;
-    document.getElementById('art-status').value = art.status;
-    document.getElementById('art-title').value = art.title;
-    document.getElementById('art-excerpt').value = art.excerpt;
-    document.getElementById('art-author').value = art.author;
-    document.getElementById('art-issue').value = art.issueId || '';
-    document.getElementById('art-date').value = art.date;
-    document.getElementById('art-readtime').value = art.readTime;
-    document.getElementById('art-image').value = art.coverImage || '';
-    document.getElementById('art-body').value = art.body || '';
-    previewImg('art-image','art-img-preview');
+function openArticleModal(id){
+  const data=Store.get();
+  document.getElementById('art-author').innerHTML=data.writers.map(w=>`<option value="${w.id}">${w.name}</option>`).join('');
+  document.getElementById('art-issue').innerHTML='<option value="">— None —</option>'+[...data.issues].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(i=>`<option value="${i.id}">${i.title} (${formatDate(i.date)})</option>`).join('');
+  if(id){
+    const art=data.articles.find(a=>a.id===id); if(!art)return;
+    document.getElementById('article-modal-title').textContent='Edit Article';
+    document.getElementById('art-id').value=art.id;
+    document.getElementById('art-type').value=art.type;
+    document.getElementById('art-status').value=art.status;
+    document.getElementById('art-title').value=art.title;
+    document.getElementById('art-excerpt').value=art.excerpt;
+    document.getElementById('art-author').value=art.author;
+    document.getElementById('art-issue').value=art.issueId||'';
+    document.getElementById('art-date').value=art.date;
+    document.getElementById('art-readtime').value=art.readTime;
+    document.getElementById('art-body').value=art.body||'';
+    document.getElementById('art-file-input').value='';
+    loadImageIntoModal('art',art.coverImage||'');
   } else {
-    document.getElementById('article-modal-title').textContent = 'New Article';
-    document.getElementById('art-id').value = '';
-    document.getElementById('art-type').value = 'creative';
-    document.getElementById('art-status').value = 'draft';
-    document.getElementById('art-title').value = '';
-    document.getElementById('art-excerpt').value = '';
-    document.getElementById('art-issue').value = '';
-    document.getElementById('art-date').value = new Date().toISOString().split('T')[0];
-    document.getElementById('art-readtime').value = 5;
-    document.getElementById('art-image').value = '';
-    document.getElementById('art-body').value = '';
-    document.getElementById('art-img-preview').classList.remove('show');
+    document.getElementById('article-modal-title').textContent='New Article';
+    ['art-id','art-title','art-excerpt','art-body'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('art-type').value='creative';
+    document.getElementById('art-status').value='draft';
+    document.getElementById('art-issue').value='';
+    document.getElementById('art-date').value=new Date().toISOString().split('T')[0];
+    document.getElementById('art-readtime').value=5;
+    document.getElementById('art-file-input').value='';
+    clearImage('art');
+    document.querySelectorAll('#article-modal .img-source-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+    document.getElementById('art-upload-panel').classList.add('active');
+    document.getElementById('art-url-panel').classList.remove('active');
   }
   document.getElementById('article-modal').classList.add('open');
 }
 
-function saveArticle() {
-  const title = document.getElementById('art-title').value.trim();
-  if (!title) { showToast('Title is required'); return; }
-  const data = Store.get();
-  const id = document.getElementById('art-id').value;
-  const article = {
-    id: id || 'a' + Date.now(),
-    type: document.getElementById('art-type').value,
-    status: document.getElementById('art-status').value,
+async function saveArticle(){
+  const title=document.getElementById('art-title').value.trim();
+  if(!title){showToast('Title is required');return;}
+  const data=Store.get(), id=document.getElementById('art-id').value;
+  const article={
+    id:id||'a'+Date.now(),
+    type:document.getElementById('art-type').value,
+    status:document.getElementById('art-status').value,
     title,
-    excerpt: document.getElementById('art-excerpt').value.trim(),
-    author: document.getElementById('art-author').value,
-    issueId: document.getElementById('art-issue').value,
-    date: document.getElementById('art-date').value,
-    readTime: parseInt(document.getElementById('art-readtime').value) || 5,
-    coverImage: document.getElementById('art-image').value.trim(),
-    body: document.getElementById('art-body').value.trim()
+    excerpt:document.getElementById('art-excerpt').value.trim(),
+    author:document.getElementById('art-author').value,
+    issueId:document.getElementById('art-issue').value,
+    date:document.getElementById('art-date').value,
+    readTime:parseInt(document.getElementById('art-readtime').value)||5,
+    coverImage:document.getElementById('art-image-data').value,
+    body:document.getElementById('art-body').value.trim()
   };
-  if (id) {
-    const idx = data.articles.findIndex(a=>a.id===id);
-    if (idx >= 0) data.articles[idx] = article;
-  } else {
-    data.articles.unshift(article);
-  }
-  Store.save(data);
+  if(id){ const idx=data.articles.findIndex(a=>a.id===id); if(idx>=0)data.articles[idx]=article; }
+  else data.articles.unshift(article);
   closeModal('article-modal');
   renderAll();
-  showToast(id ? 'Article updated' : 'Article created');
+  await persist(data, (id?'Update':'Add')+' article: '+title);
 }
 
-function togglePublish(id) {
-  const data = Store.get();
-  const art = data.articles.find(a=>a.id===id);
-  if (!art) return;
-  art.status = art.status === 'published' ? 'draft' : 'published';
-  Store.save(data);
+async function togglePublish(id){
+  const data=Store.get(), art=data.articles.find(a=>a.id===id); if(!art)return;
+  art.status=art.status==='published'?'draft':'published';
   renderAll();
-  showToast(art.status === 'published' ? 'Article published' : 'Article unpublished');
+  await persist(data,(art.status==='published'?'Publish':'Unpublish')+' article: '+art.title);
 }
 
-function deleteArticle(id) {
-  if (!confirm('Delete this article? This cannot be undone.')) return;
-  const data = Store.get();
-  data.articles = data.articles.filter(a=>a.id!==id);
-  Store.save(data);
+async function deleteArticle(id){
+  if(!confirm('Delete this article? This cannot be undone.'))return;
+  const data=Store.get();
+  const title=data.articles.find(a=>a.id===id)?.title||id;
+  data.articles=data.articles.filter(a=>a.id!==id);
   renderAll();
-  showToast('Article deleted');
+  await persist(data,'Delete article: '+title);
 }
 
-function openIssueModal(id) {
-  if (id) {
-    const data = Store.get();
-    const issue = data.issues.find(i=>i.id===id);
-    if (!issue) return;
-    document.getElementById('issue-modal-title').textContent = 'Edit Issue';
-    document.getElementById('issue-id').value = issue.id;
-    document.getElementById('issue-title').value = issue.title;
-    document.getElementById('issue-date').value = issue.date;
-    document.getElementById('issue-description').value = issue.description || '';
+function openIssueModal(id){
+  if(id){
+    const data=Store.get(), issue=data.issues.find(i=>i.id===id); if(!issue)return;
+    document.getElementById('issue-modal-title').textContent='Edit Issue';
+    document.getElementById('issue-id').value=issue.id;
+    document.getElementById('issue-title').value=issue.title;
+    document.getElementById('issue-date').value=issue.date;
+    document.getElementById('issue-description').value=issue.description||'';
   } else {
-    document.getElementById('issue-modal-title').textContent = 'New Issue';
-    document.getElementById('issue-id').value = '';
-    document.getElementById('issue-title').value = '';
-    document.getElementById('issue-date').value = new Date().toISOString().split('T')[0];
-    document.getElementById('issue-description').value = '';
+    document.getElementById('issue-modal-title').textContent='New Issue';
+    ['issue-id','issue-title','issue-description'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('issue-date').value=new Date().toISOString().split('T')[0];
   }
   document.getElementById('issue-modal').classList.add('open');
 }
 
-function saveIssue() {
-  const title = document.getElementById('issue-title').value.trim();
-  if (!title) { showToast('Issue title is required'); return; }
-  const data = Store.get();
-  const id = document.getElementById('issue-id').value;
-  const issue = {
-    id: id || 'i' + Date.now(),
-    title,
-    date: document.getElementById('issue-date').value,
-    description: document.getElementById('issue-description').value.trim()
-  };
-  if (id) {
-    const idx = data.issues.findIndex(i=>i.id===id);
-    if (idx >= 0) data.issues[idx] = issue;
-  } else {
-    data.issues.unshift(issue);
-  }
-  Store.save(data);
-  closeModal('issue-modal');
-  renderAll();
-  showToast(id ? 'Issue updated' : 'Issue created');
+async function saveIssue(){
+  const title=document.getElementById('issue-title').value.trim();
+  if(!title){showToast('Issue title is required');return;}
+  const data=Store.get(), id=document.getElementById('issue-id').value;
+  const issue={id:id||'i'+Date.now(),title,date:document.getElementById('issue-date').value,description:document.getElementById('issue-description').value.trim()};
+  if(id){ const idx=data.issues.findIndex(i=>i.id===id); if(idx>=0)data.issues[idx]=issue; } else data.issues.unshift(issue);
+  closeModal('issue-modal'); renderAll();
+  await persist(data,(id?'Update':'Add')+' issue: '+title);
 }
 
-function deleteIssue(id) {
-  if (!confirm('Delete this issue? Articles assigned to it will become unassigned.')) return;
-  const data = Store.get();
-  data.issues = data.issues.filter(i=>i.id!==id);
-  data.articles.forEach(a=>{ if(a.issueId===id) a.issueId=''; });
-  Store.save(data);
+async function deleteIssue(id){
+  if(!confirm('Delete this issue? Articles assigned to it will become unassigned.'))return;
+  const data=Store.get();
+  const title=data.issues.find(i=>i.id===id)?.title||id;
+  data.issues=data.issues.filter(i=>i.id!==id);
+  data.articles.forEach(a=>{ if(a.issueId===id)a.issueId=''; });
   renderAll();
-  showToast('Issue deleted');
+  await persist(data,'Delete issue: '+title);
 }
 
-function openWriterModal(id) {
-  if (id) {
-    const data = Store.get();
-    const w = data.writers.find(w=>w.id===id);
-    if (!w) return;
-    document.getElementById('writer-modal-title').textContent = 'Edit Writer';
-    document.getElementById('wr-id').value = w.id;
-    document.getElementById('wr-name').value = w.name;
-    document.getElementById('wr-role').value = w.role;
-    document.getElementById('wr-bio').value = w.bio;
-    document.getElementById('wr-avatar').value = w.avatar || '';
-    previewImg('wr-avatar','wr-img-preview');
+function openWriterModal(id){
+  if(id){
+    const data=Store.get(), w=data.writers.find(w=>w.id===id); if(!w)return;
+    document.getElementById('writer-modal-title').textContent='Edit Writer';
+    document.getElementById('wr-id').value=w.id;
+    document.getElementById('wr-name').value=w.name;
+    document.getElementById('wr-role').value=w.role;
+    document.getElementById('wr-bio').value=w.bio;
+    document.getElementById('wr-file-input').value='';
+    loadImageIntoModal('wr',w.avatar||'');
   } else {
-    document.getElementById('writer-modal-title').textContent = 'New Writer';
-    document.getElementById('wr-id').value = '';
-    document.getElementById('wr-name').value = '';
-    document.getElementById('wr-role').value = '';
-    document.getElementById('wr-bio').value = '';
-    document.getElementById('wr-avatar').value = '';
-    document.getElementById('wr-img-preview').classList.remove('show');
+    document.getElementById('writer-modal-title').textContent='New Writer';
+    ['wr-id','wr-name','wr-role','wr-bio'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('wr-file-input').value='';
+    clearImage('wr');
+    document.querySelectorAll('#writer-modal .img-source-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+    document.getElementById('wr-upload-panel').classList.add('active');
+    document.getElementById('wr-url-panel').classList.remove('active');
   }
   document.getElementById('writer-modal').classList.add('open');
 }
 
-function saveWriter() {
-  const name = document.getElementById('wr-name').value.trim();
-  if (!name) { showToast('Name is required'); return; }
-  const data = Store.get();
-  const id = document.getElementById('wr-id').value;
-  const writer = {
-    id: id || 'w' + Date.now(),
-    name,
-    role: document.getElementById('wr-role').value.trim(),
-    bio: document.getElementById('wr-bio').value.trim(),
-    avatar: document.getElementById('wr-avatar').value.trim()
-  };
-  if (id) {
-    const idx = data.writers.findIndex(w=>w.id===id);
-    if (idx >= 0) data.writers[idx] = writer;
-  } else {
-    data.writers.push(writer);
-  }
-  Store.save(data);
-  closeModal('writer-modal');
+async function saveWriter(){
+  const name=document.getElementById('wr-name').value.trim();
+  if(!name){showToast('Name is required');return;}
+  const data=Store.get(), id=document.getElementById('wr-id').value;
+  const writer={id:id||'w'+Date.now(),name,role:document.getElementById('wr-role').value.trim(),bio:document.getElementById('wr-bio').value.trim(),avatar:document.getElementById('wr-image-data').value};
+  if(id){ const idx=data.writers.findIndex(w=>w.id===id); if(idx>=0)data.writers[idx]=writer; } else data.writers.push(writer);
+  closeModal('writer-modal'); renderAll();
+  await persist(data,(id?'Update':'Add')+' writer: '+name);
+}
+
+async function deleteWriter(id){
+  if(!confirm('Delete this writer?'))return;
+  const data=Store.get(), name=data.writers.find(w=>w.id===id)?.name||id;
+  data.writers=data.writers.filter(w=>w.id!==id);
   renderAll();
-  showToast(id ? 'Writer updated' : 'Writer added');
+  await persist(data,'Delete writer: '+name);
 }
 
-function deleteWriter(id) {
-  if (!confirm('Delete this writer? Their articles will lose author assignment.')) return;
-  const data = Store.get();
-  data.writers = data.writers.filter(w=>w.id!==id);
-  Store.save(data);
-  renderAll();
-  showToast('Writer deleted');
-}
-
-// ─── HELPERS ─────────────────────────────────
-function previewImg(inputId, previewId) {
-  const url = document.getElementById(inputId).value.trim();
-  const img = document.getElementById(previewId);
-  if (url) { img.src = url; img.classList.add('show'); }
-  else { img.classList.remove('show'); }
-}
-
-function wrapText(textareaId, before, after) {
-  const ta = document.getElementById(textareaId);
-  const start = ta.selectionStart, end = ta.selectionEnd;
-  const selected = ta.value.substring(start, end);
-  const replacement = before + (selected || 'text') + after;
-  ta.value = ta.value.substring(0, start) + replacement + ta.value.substring(end);
-  ta.focus();
-  ta.selectionStart = start + before.length;
-  ta.selectionEnd = start + before.length + (selected || 'text').length;
-}
-
-// Close modals on overlay click
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', e => {
-    if (e.target === overlay) overlay.classList.remove('open');
+// ─── GITHUB SETTINGS ─────────────────────────────────────────────────
+function updateGHStatus(){
+  const configured=ghIsConfigured();
+  const c=getGHConfig();
+  const label=configured?`${c.owner}/${c.repo}`:'Not configured';
+  ['','2'].forEach(s=>{
+    const dot=document.getElementById('gh-dot'+s), txt=document.getElementById('gh-status-text'+s);
+    if(!dot||!txt)return;
+    dot.className='gh-dot'+(configured?' connected':'');
+    txt.textContent=label;
   });
-});
+}
 
-// Init
-Store.init();
+function loadGHSettingsForm(){
+  const c=getGHConfig();
+  document.getElementById('gh-owner').value=c.owner||'';
+  document.getElementById('gh-repo').value=c.repo||'';
+  document.getElementById('gh-branch').value=c.branch||'main';
+  document.getElementById('gh-token').value=c.token||'';
+}
+
+async function saveGHSettings(){
+  const cfg={
+    owner:document.getElementById('gh-owner').value.trim(),
+    repo:document.getElementById('gh-repo').value.trim(),
+    branch:document.getElementById('gh-branch').value.trim()||'main',
+    token:document.getElementById('gh-token').value.trim()
+  };
+  if(!cfg.owner||!cfg.repo||!cfg.token){showToast('All fields required');return;}
+  saveGHConfig(cfg);
+  updateGHStatus();
+  const result=document.getElementById('gh-result');
+  result.textContent='Testing connection…';
+  result.style.color='rgba(255,255,255,0.4)';
+  setSavingMsg('Testing GitHub connection…',true);
+  try {
+    await Store.fetchFromGitHub();
+    setSavingMsg('',false);
+    result.textContent='✓ Connected successfully! Data loaded from GitHub.';
+    result.style.color='#6bba6b';
+    renderAll();
+    showToast('GitHub connected ✓','success');
+  } catch(e) {
+    setSavingMsg('',false);
+    if(e.message.includes('404')){
+      result.innerHTML='File <code>data/db.json</code> not found. <a href="#" onclick="initDB();return false;" style="color:var(--accent);">Initialise it now →</a>';
+      result.style.color='rgba(255,180,100,0.9)';
+    } else {
+      result.textContent='✗ '+e.message;
+      result.style.color='#e77';
+    }
+  }
+}
+
+async function initDB(){
+  if(!ghIsConfigured()){showToast('Save settings first');return;}
+  if(!confirm('This will create data/db.json in your repo with the default sample content. Continue?'))return;
+  setSavingMsg('Creating database file…',true);
+  try {
+    await Store.initialize();
+    setSavingMsg('',false);
+    document.getElementById('gh-result').textContent='✓ Database initialised at data/db.json';
+    document.getElementById('gh-result').style.color='#6bba6b';
+    renderAll();
+    showToast('Database created ✓','success');
+  } catch(e) {
+    setSavingMsg('',false);
+    showToast('Init failed: '+e.message,'error');
+  }
+}
+
+async function syncFromGH(){
+  if(!ghIsConfigured()){showToast('GitHub not configured');return;}
+  setSavingMsg('Pulling from GitHub…',true);
+  try {
+    await Store.fetchFromGitHub();
+    setSavingMsg('',false);
+    renderAll();
+    showToast('Synced from GitHub ✓','success');
+  } catch(e) {
+    setSavingMsg('',false);
+    showToast('Sync failed: '+e.message,'error');
+  }
+}
+
+function clearGHConfig(){
+  if(!confirm('Clear GitHub configuration from this browser?'))return;
+  localStorage.removeItem(GH_CONFIG_KEY);
+  loadGHSettingsForm(); updateGHStatus();
+  showToast('GitHub config cleared');
+}
+
+function clearLocalCache(){
+  if(!confirm('Clear local data cache? You will need to re-fetch from GitHub.'))return;
+  Cache.clear();
+  renderAll();
+  showToast('Cache cleared');
+}
+
+// ─── IMAGE HELPERS ────────────────────────────────────────────────────
+function switchImgTab(prefix,tab,btn){
+  btn.closest('.img-source-tabs').querySelectorAll('.img-source-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(prefix+'-upload-panel').classList.toggle('active',tab==='upload');
+  document.getElementById(prefix+'-url-panel').classList.toggle('active',tab==='url');
+}
+function handleDragOver(e,zoneId){e.preventDefault();document.getElementById(zoneId).classList.add('dragover');}
+function handleDragLeave(zoneId){document.getElementById(zoneId).classList.remove('dragover');}
+function handleDrop(e,prefix){e.preventDefault();document.getElementById(prefix+'-drop-zone').classList.remove('dragover');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadImageFile(f,prefix);}
+function handleFileSelect(e,prefix){const f=e.target.files[0];if(f)loadImageFile(f,prefix);}
+function loadImageFile(file,prefix){
+  if(file.size>2*1024*1024)showToast('Large image — compressing…');
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas'), MAX=1200;
+      let w=img.width,h=img.height;
+      if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      setImageData(prefix,canvas.toDataURL('image/jpeg',0.82));
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function previewImgFromUrl(prefix){setImageData(prefix,document.getElementById(prefix==='art'?'art-image':'wr-avatar').value.trim());}
+function setImageData(prefix,src){
+  document.getElementById(prefix+'-image-data').value=src;
+  const preview=document.getElementById(prefix+'-img-preview'), clearBtn=document.getElementById(prefix+'-img-clear');
+  if(src){preview.src=src;preview.classList.add('show');clearBtn.classList.add('show');}
+  else{preview.src='';preview.classList.remove('show');clearBtn.classList.remove('show');}
+}
+function clearImage(prefix){
+  document.getElementById(prefix+'-image-data').value='';
+  if(prefix==='art')document.getElementById('art-image').value='';
+  if(prefix==='wr')document.getElementById('wr-avatar').value='';
+  const fi=document.getElementById(prefix+'-file-input'); if(fi)fi.value='';
+  setImageData(prefix,'');
+}
+function loadImageIntoModal(prefix,src){
+  if(!src){clearImage(prefix);return;}
+  const isBase64=src.startsWith('data:');
+  const modalId=prefix==='art'?'article-modal':'writer-modal';
+  const tabs=document.querySelectorAll(`#${modalId} .img-source-tab`);
+  if(isBase64){
+    tabs.forEach((t,i)=>t.classList.toggle('active',i===0));
+    document.getElementById(prefix+'-upload-panel').classList.add('active');
+    document.getElementById(prefix+'-url-panel').classList.remove('active');
+  } else {
+    tabs.forEach((t,i)=>t.classList.toggle('active',i===1));
+    document.getElementById(prefix+'-upload-panel').classList.remove('active');
+    document.getElementById(prefix+'-url-panel').classList.add('active');
+    if(prefix==='art')document.getElementById('art-image').value=src;
+    if(prefix==='wr')document.getElementById('wr-avatar').value=src;
+  }
+  setImageData(prefix,src);
+}
+function previewImg(){}
+
+// ─── MISC ─────────────────────────────────────────────────────────────
+function wrapText(textareaId,before,after){
+  const ta=document.getElementById(textareaId);
+  const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.substring(s,e);
+  const rep=before+(sel||'text')+after;
+  ta.value=ta.value.substring(0,s)+rep+ta.value.substring(e);
+  ta.focus();ta.selectionStart=s+before.length;ta.selectionEnd=s+before.length+(sel||'text').length;
+}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
 checkAuth();
 </script>
 </body>
