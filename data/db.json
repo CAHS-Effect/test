@@ -1,6 +1,19 @@
 {
   "articles": [
     {
+      "id": "a1773764552148",
+      "type": "news",
+      "status": "draft",
+      "title": "Netanyahu Strikes!",
+      "excerpt": "Iran",
+      "author": "w1773762590006",
+      "issueId": "i1773762543643",
+      "date": "2026-03-17",
+      "readTime": 15,
+      "coverImage": "",
+      "body": "<strong>Netanyahu</strong> missile strikes <em>Iran</em>."
+    },
+    {
       "id": "a1773763990129",
       "type": "creative",
       "status": "published",
