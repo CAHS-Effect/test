@@ -19,8 +19,8 @@ const GH_SHA_KEY    = 'gce_gh_sha';
 // Hardcoding owner/repo means ANY device loads data automatically.
 // The token is never stored here — it lives in localStorage (CMS only).
 const SITE_CONFIG = {
-  owner:  'CAHS-Effect',    // e.g. 'your-github-username'
-  repo:   'test',    // e.g. 'gce-site'
+  owner:  '',    // e.g. 'your-github-username'
+  repo:   '',    // e.g. 'gce-site'
   branch: 'main'
 };
 // ─────────────────────────────────────────────────────────────────────
@@ -161,6 +161,15 @@ async function ghCreate(data) {
   return data;
 }
 
+// ─── Derive db.json URL automatically from current page location ─────
+// When hosted on GitHub Pages (username.github.io/repo), we can fetch
+// data/db.json relative to the site root — zero config needed on any device.
+function selfDbUrl() {
+  // Works on GitHub Pages, any static host, and local file:// with a server
+  const base = window.location.href.replace(/\/[^\/]*$/, '');
+  return base + '/data/db.json';
+}
+
 // ─── Store (the public API used by all pages) ─────────────────────────
 const Store = {
   get() { return Cache.get() || JSON.parse(JSON.stringify(DEFAULT_DATA)); },
@@ -171,50 +180,49 @@ const Store = {
   },
 
   async fetchPublic() {
-    if (!ghIsConfigured()) {
-      return Cache.get() || JSON.parse(JSON.stringify(DEFAULT_DATA));
-    }
-    const c = getGHConfig();
-    const branch = c.branch || 'main';
-
-    // Strategy 1: GitHub Contents API — has correct CORS headers, no token needed for public repos
+    // Strategy 1: Fetch db.json relative to the site itself.
+    // This works on ANY device with zero config — no GitHub token, no localStorage.
     try {
-      const apiUrl = `https://api.github.com/repos/${c.owner}/${c.repo}/contents/data/db.json?ref=${branch}&t=${Date.now()}`;
-      const headers = { 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
-      // Include token if available (increases rate limit from 60 to 5000 req/hr)
-      if (c.token) headers['Authorization'] = `Bearer ${c.token}`;
-      const res = await fetch(apiUrl, { headers });
-      if (!res.ok) throw new Error(`GitHub API ${res.status}`);
-      const json = await res.json();
-      const data = JSON.parse(atob(json.content.replace(/\n/g, '')));
-      Cache.setSHA(json.sha);
-      Cache.set(data);
-      return data;
-    } catch (apiErr) {
-      console.warn('GitHub API fetch failed, trying raw CDN:', apiErr.message);
-    }
-
-    // Strategy 2: raw.githubusercontent.com (works on GitHub Pages, may fail locally)
-    try {
-      const rawUrl = `https://raw.githubusercontent.com/${c.owner}/${c.repo}/${branch}/data/db.json?t=${Date.now()}`;
-      const res = await fetch(rawUrl);
-      if (!res.ok) throw new Error(`raw CDN ${res.status}`);
+      const url = selfDbUrl() + '?t=' + Date.now();
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Self-fetch ${res.status}`);
       const data = await res.json();
       Cache.set(data);
+      // Also grab the SHA if we have GitHub config, for CMS writes
+      const c = getGHConfig();
+      if (c.owner && c.repo && c.token && !Cache.getSHA()) {
+        ghGet().catch(() => {}); // background fetch to warm the SHA
+      }
       return data;
-    } catch (rawErr) {
-      console.warn('Raw CDN fetch failed:', rawErr.message);
+    } catch (selfErr) {
+      console.warn('Self-fetch failed:', selfErr.message);
     }
 
-    // Strategy 3: local cache (stale but better than nothing)
+    // Strategy 2: GitHub Contents API (fallback, needs owner+repo configured)
+    if (ghIsConfigured()) {
+      const c = getGHConfig();
+      const branch = c.branch || 'main';
+      try {
+        const apiUrl = `https://api.github.com/repos/${c.owner}/${c.repo}/contents/data/db.json?ref=${branch}&t=${Date.now()}`;
+        const headers = { 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
+        if (c.token) headers['Authorization'] = `Bearer ${c.token}`;
+        const res = await fetch(apiUrl, { headers });
+        if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+        const json = await res.json();
+        const data = JSON.parse(atob(json.content.replace(/\n/g, '')));
+        Cache.setSHA(json.sha);
+        Cache.set(data);
+        return data;
+      } catch (apiErr) {
+        console.warn('GitHub API fetch failed:', apiErr.message);
+      }
+    }
+
+    // Strategy 3: Local cache
     const cached = Cache.get();
-    if (cached) {
-      console.info('Serving from local cache');
-      return cached;
-    }
+    if (cached) { console.info('Serving from local cache'); return cached; }
 
-    // Nothing worked — return empty default so page still renders
-    console.error('Could not load data from GitHub or cache. Is the repo public and db.json initialised?');
+    console.error('Could not load db.json. Make sure data/db.json exists in your repo.');
     return JSON.parse(JSON.stringify(DEFAULT_DATA));
   },
 
