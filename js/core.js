@@ -15,12 +15,32 @@ const GH_CONFIG_KEY = 'gce_gh_config';
 const GH_CACHE_KEY  = 'gce_gh_cache';
 const GH_SHA_KEY    = 'gce_gh_sha';
 
+// ─── SITE CONFIG — set these after creating your GitHub repo ─────────
+// Hardcoding owner/repo means ANY device loads data automatically.
+// The token is never stored here — it lives in localStorage (CMS only).
+const SITE_CONFIG = {
+  owner:  '',    // e.g. 'your-github-username'
+  repo:   '',    // e.g. 'gce-site'
+  branch: 'main'
+};
+// ─────────────────────────────────────────────────────────────────────
+
 function getGHConfig() {
-  try { return JSON.parse(localStorage.getItem(GH_CONFIG_KEY)) || {}; } catch { return {}; }
+  // Merge SITE_CONFIG (public, hardcoded) with localStorage (has the token)
+  try {
+    const stored = JSON.parse(localStorage.getItem(GH_CONFIG_KEY)) || {};
+    return {
+      owner:  stored.owner  || SITE_CONFIG.owner,
+      repo:   stored.repo   || SITE_CONFIG.repo,
+      branch: stored.branch || SITE_CONFIG.branch || 'main',
+      token:  stored.token  || ''
+    };
+  } catch { return { ...SITE_CONFIG, token: '' }; }
 }
 function saveGHConfig(cfg) { localStorage.setItem(GH_CONFIG_KEY, JSON.stringify(cfg)); }
 function ghIsConfigured() {
-  const c = getGHConfig(); return !!(c.owner && c.repo && c.token);
+  const c = getGHConfig();
+  return !!(c.owner && c.repo); // token NOT required for reading a public repo
 }
 
 function rawDbUrl() {
