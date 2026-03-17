@@ -1,7 +1,7 @@
 {
-  "name": "the-inkwell",
+  "name": "the-cahs-effect",
   "version": "1.0.0",
-  "description": "The Inkwell journalism site — Netlify + Neon backend",
+  "description": "The CAHS & Effect journalism site — Netlify + Neon backend",
   "type": "module",
   "dependencies": {
     "@neondatabase/serverless": "^0.9.0"
