@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-//  THE CAHS & EFFECT — Data Layer (Netlify Functions + Neon Postgres)
+//  THE INKWELL — Data Layer (Netlify Functions + Neon Postgres)
 // ═══════════════════════════════════════════════════════════════════
 //
 //  All reads  → GET  /.netlify/functions/api?resource=all   (public, no auth)
@@ -10,9 +10,9 @@
 //  hardcoded here.
 // ═══════════════════════════════════════════════════════════════════
 
-const API      = '/.netlify/functions/api';
-const CACHE_KEY  = 'gce_cache';
-const SECRET_KEY = 'gce_cms_secret';
+const API      = '/api';
+const CACHE_KEY  = 'cahseffect_cache';
+const SECRET_KEY = 'cahseffect_cms_secret';
 
 // ─── Local cache ──────────────────────────────────────────────────────
 const Cache = {
@@ -190,7 +190,7 @@ function showPageLoader(msg) {
   if(!el){
     el=document.createElement('div');el.id='page-loader';
     el.style.cssText='position:fixed;inset:0;z-index:2000;background:var(--warm-white);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity 0.4s;';
-    el.innerHTML=`<div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;">The CAHS & Effect</div><div id="page-loader-msg" style="font-size:0.8rem;color:var(--mid);letter-spacing:1px;"></div><div style="width:40px;height:2px;background:var(--border);overflow:hidden;margin-top:4px;"><div style="height:100%;background:var(--accent);animation:loaderSlide 1s ease-in-out infinite;"></div></div><style>@keyframes loaderSlide{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}</style>`;
+    el.innerHTML=`<div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;">The <span style="color:var(--accent)">Ink</span>well</div><div id="page-loader-msg" style="font-size:0.8rem;color:var(--mid);letter-spacing:1px;"></div><div style="width:40px;height:2px;background:var(--border);overflow:hidden;margin-top:4px;"><div style="height:100%;background:var(--accent);animation:loaderSlide 1s ease-in-out infinite;"></div></div><style>@keyframes loaderSlide{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}</style>`;
     document.body.appendChild(el);
   }
   document.getElementById('page-loader-msg').textContent=msg||'Loading…';

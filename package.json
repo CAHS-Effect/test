@@ -1,9 +1,9 @@
 {
-  "name": "the-cahs-effect",
+  "name": "cahs-and-effect",
   "version": "1.0.0",
-  "description": "The CAHS & Effect journalism site — Netlify + Neon backend",
+  "description": "The CAHS & Effect journalism site — Cloudflare Pages + Turso",
   "type": "module",
   "dependencies": {
-    "@neondatabase/serverless": "^0.9.0"
+    "@libsql/client": "^0.6.0"
   }
 }
