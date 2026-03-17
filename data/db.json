@@ -14,5 +14,13 @@
       "description": "Description here"
     }
   ],
-  "writers": []
+  "writers": [
+    {
+      "id": "w1773762590006",
+      "name": "Charles Smith",
+      "role": "Editor",
+      "bio": "Hello I'm Charles",
+      "avatar": ""
+    }
+  ]
 }
