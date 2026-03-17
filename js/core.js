@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════
-//  THE INKWELL — Data Layer (GitHub-backed JSON database)
+//  THE GCE — Data Layer (GitHub-backed JSON database)
 // ═══════════════════════════════════════════════════════
 //
 //  How it works:
@@ -11,9 +11,9 @@
 //  PAT scope needed: `repo` (or `public_repo` for public repos)
 // ═══════════════════════════════════════════════════════
 
-const GH_CONFIG_KEY = 'inkwell_gh_config';
-const GH_CACHE_KEY  = 'inkwell_gh_cache';
-const GH_SHA_KEY    = 'inkwell_gh_sha';
+const GH_CONFIG_KEY = 'gce_gh_config';
+const GH_CACHE_KEY  = 'gce_gh_cache';
+const GH_SHA_KEY    = 'gce_gh_sha';
 
 function getGHConfig() {
   try { return JSON.parse(localStorage.getItem(GH_CONFIG_KEY)) || {}; } catch { return {}; }
@@ -118,7 +118,7 @@ async function ghPut(data, msg) {
   const c = getGHConfig();
   const res = await fetch(apiDbUrl(), {
     method:'PUT', headers:{ ...ghHeaders(),'Content-Type':'application/json' },
-    body: JSON.stringify({ message: msg || 'Update Inkwell database', content, sha, branch: c.branch||'main' })
+    body: JSON.stringify({ message: msg || 'Update GCE database', content, sha, branch: c.branch||'main' })
   });
   if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message||`GitHub PUT ${res.status}`); }
   const json = await res.json();
@@ -132,7 +132,7 @@ async function ghCreate(data) {
   const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
   const res = await fetch(apiDbUrl(), {
     method:'PUT', headers:{ ...ghHeaders(),'Content-Type':'application/json' },
-    body: JSON.stringify({ message:'Initialize Inkwell database', content, branch: c.branch||'main' })
+    body: JSON.stringify({ message:'Initialize GCE database', content, branch: c.branch||'main' })
   });
   if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message||`GitHub create ${res.status}`); }
   const json = await res.json();
@@ -154,16 +154,48 @@ const Store = {
     if (!ghIsConfigured()) {
       return Cache.get() || JSON.parse(JSON.stringify(DEFAULT_DATA));
     }
+    const c = getGHConfig();
+    const branch = c.branch || 'main';
+
+    // Strategy 1: GitHub Contents API — has correct CORS headers, no token needed for public repos
     try {
-      const url = rawDbUrl() + '?t=' + Date.now();
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('fetch failed');
+      const apiUrl = `https://api.github.com/repos/${c.owner}/${c.repo}/contents/data/db.json?ref=${branch}&t=${Date.now()}`;
+      const headers = { 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
+      // Include token if available (increases rate limit from 60 to 5000 req/hr)
+      if (c.token) headers['Authorization'] = `Bearer ${c.token}`;
+      const res = await fetch(apiUrl, { headers });
+      if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+      const json = await res.json();
+      const data = JSON.parse(atob(json.content.replace(/\n/g, '')));
+      Cache.setSHA(json.sha);
+      Cache.set(data);
+      return data;
+    } catch (apiErr) {
+      console.warn('GitHub API fetch failed, trying raw CDN:', apiErr.message);
+    }
+
+    // Strategy 2: raw.githubusercontent.com (works on GitHub Pages, may fail locally)
+    try {
+      const rawUrl = `https://raw.githubusercontent.com/${c.owner}/${c.repo}/${branch}/data/db.json?t=${Date.now()}`;
+      const res = await fetch(rawUrl);
+      if (!res.ok) throw new Error(`raw CDN ${res.status}`);
       const data = await res.json();
       Cache.set(data);
       return data;
-    } catch {
-      return Cache.get() || JSON.parse(JSON.stringify(DEFAULT_DATA));
+    } catch (rawErr) {
+      console.warn('Raw CDN fetch failed:', rawErr.message);
     }
+
+    // Strategy 3: local cache (stale but better than nothing)
+    const cached = Cache.get();
+    if (cached) {
+      console.info('Serving from local cache');
+      return cached;
+    }
+
+    // Nothing worked — return empty default so page still renders
+    console.error('Could not load data from GitHub or cache. Is the repo public and db.json initialised?');
+    return JSON.parse(JSON.stringify(DEFAULT_DATA));
   },
 
   async save(data, msg) {
@@ -230,7 +262,7 @@ function showPageLoader(msg) {
   if(!el){
     el=document.createElement('div');el.id='page-loader';
     el.style.cssText='position:fixed;inset:0;z-index:2000;background:var(--warm-white);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity 0.4s;';
-    el.innerHTML=`<div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;">The <span style="color:var(--accent)">Ink</span>well</div><div id="page-loader-msg" style="font-size:0.8rem;color:var(--mid);letter-spacing:1px;"></div><div style="width:40px;height:2px;background:var(--border);overflow:hidden;margin-top:4px;"><div style="height:100%;background:var(--accent);animation:loaderSlide 1s ease-in-out infinite;"></div></div><style>@keyframes loaderSlide{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}</style>`;
+    el.innerHTML=`<div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;">The Gorgon + The CAHS & Effect</div><div id="page-loader-msg" style="font-size:0.8rem;color:var(--mid);letter-spacing:1px;"></div><div style="width:40px;height:2px;background:var(--border);overflow:hidden;margin-top:4px;"><div style="height:100%;background:var(--accent);animation:loaderSlide 1s ease-in-out infinite;"></div></div><style>@keyframes loaderSlide{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}</style>`;
     document.body.appendChild(el);
   }
   document.getElementById('page-loader-msg').textContent=msg||'Loading…';
