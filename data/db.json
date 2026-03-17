@@ -1,19 +1,6 @@
 {
   "articles": [
     {
-      "id": "a1",
-      "type": "creative",
-      "status": "published",
-      "title": "The Last Light of the Harbour",
-      "excerpt": "A meditative essay on endings, memory, and the particular sadness of ports at dusk.",
-      "body": "<p>There is a particular quality of light that exists only at the end of things. I discovered this truth standing at the edge of the harbour, watching the last cargo ship heave itself out toward the horizon, its rusted flanks catching the dying gold of a March sun.</p><p>I had come to the harbour for no particular reason â or rather, for the reason that all writers eventually arrive at: I needed to feel something real. The city behind me had grown loud with opinions and urgent with noise. The water, at least, remained honest.</p><blockquote>The sea does not care about your narrative arc. It simply continues, which is perhaps the most radical thing anything can do.</blockquote><p>A dockworker in an orange vest walked the length of the pier, checking moorings with the methodical patience of someone who has made peace with repetition. I envied him. Not his labour, but his certainty â the knowledge that the rope either held or it did not, and that you would know which by morning.</p><p>The last light touched the water and went out. The dockworker finished his rounds and lit a cigarette, looking out at exactly nothing. I walked back through the city feeling, if not lighter, then at least honestly heavy.</p>",
-      "author": "w1",
-      "date": "2025-03-08",
-      "readTime": 7,
-      "coverImage": "",
-      "issueId": ""
-    },
-    {
       "id": "a2",
       "type": "creative",
       "status": "published",
