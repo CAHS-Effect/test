@@ -1,6 +1,19 @@
 {
   "articles": [
     {
+      "id": "a1773763990129",
+      "type": "creative",
+      "status": "draft",
+      "title": "Creative Writing by Amir",
+      "excerpt": "Creative stuff",
+      "author": "w1773763106837",
+      "issueId": "",
+      "date": "2026-03-17",
+      "readTime": 5,
+      "coverImage": "",
+      "body": "Hello I'm creative writing"
+    },
+    {
       "id": "a1773763161155",
       "type": "news",
       "status": "published",
