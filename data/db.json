@@ -61,6 +61,13 @@
       "role": "Editor",
       "bio": "Hello I'm Charles",
       "avatar": ""
+    },
+    {
+      "id": "w1773763106837",
+      "name": "Amir Allen",
+      "role": "Lead Technician",
+      "bio": "Hello I'm Amir",
+      "avatar": "https://media.licdn.com/dms/image/v2/D4D03AQHhMZkHzFB4oA/profile-displayphoto-scale_200_200/B4DZvZOuj7JoAY-/0/1768876075996?e=2147483647&v=beta&t=0TYFtJmoLb_OxAcONB-8_Z_w06JV99bJnG-0QBtmSlA"
     }
   ]
 }
