@@ -1,19 +1,5 @@
 {
-  "articles": [
-    {
-      "id": "a6",
-      "type": "creative",
-      "status": "published",
-      "title": "Notes Toward an Understanding of Tuesday",
-      "excerpt": "A lyric essay about the texture of ordinary time and why the middle of the week feels like a country no one has named.",
-      "body": "<p>Tuesday is the most honest day of the week. Monday still carries the bruised optimism of Sunday evening; Wednesday has achieved the modest milestone of the midpoint; Thursday is already tilting toward the weekend. But Tuesday is simply itself.</p><blockquote>The middle of the week is where ordinary life actually happens, which is perhaps why writers rarely set their climaxes there.</blockquote><p>I am trying to learn to live more Tuesdays. To stop performing the arc and simply continue. To find the work that gets done in the middle of things, without ceremony, because that is mostly what a life is.</p>",
-      "author": "w3",
-      "date": "2025-01-30",
-      "readTime": 4,
-      "coverImage": "",
-      "issueId": ""
-    }
-  ],
+  "articles": [],
   "issues": [
     {
       "id": "i1",
