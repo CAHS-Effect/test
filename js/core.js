@@ -1,4 +1,4 @@
-const STORE_KEY = 'cejw_data';
+const STORE_KEY = 'gce_data';
 
 const DEFAULT_DATA = {
   articles: [
