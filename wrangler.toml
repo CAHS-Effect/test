@@ -5,9 +5,17 @@ compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "."
 
 [vars]
-# Add these as secrets in Cloudflare dashboard:
-# Pages → Settings → Environment Variables → Add variable (mark as Secret)
+# ── Set these as Secrets in Cloudflare dashboard ──────────────────────
+# Pages → Settings → Environment Variables → Add variable (type: Secret)
 #
-# TURSO_URL      — your Turso database URL  (e.g. libsql://your-db.turso.io)
-# TURSO_TOKEN    — your Turso auth token
-# CMS_SECRET     — any strong password you choose (protects write endpoints)
+# TURSO_URL        — libsql://your-db-name.turso.io
+# TURSO_TOKEN      — your Turso auth token
+# CMS_SECRET       — any strong password (protects write endpoints)
+# R2_PUBLIC_URL    — public URL of your R2 bucket, no trailing slash
+#                    e.g. https://pub-xxxxxxxxxxxxxxxx.r2.dev
+#
+# ── Set this as an R2 Bucket Binding ─────────────────────────────────
+# Pages → Settings → Functions → R2 bucket bindings → Add binding
+#
+# Variable name : IMAGES_BUCKET
+# Bucket        : (select your bucket, e.g. cahs-effect-images)

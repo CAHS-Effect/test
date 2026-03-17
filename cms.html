@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — The CAHS & Effect CMS</title>
+  <title>Admin — The CAHS &amp; Effect CMS</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
     body{background:var(--ink);}
@@ -58,12 +58,13 @@
 <!-- LOGIN -->
 <div id="login-screen" class="cms-login">
   <div class="login-box">
-    <h1>The CAHS & Effect</h1>
+    <h1>The <span style="color:var(--accent)">Ink</span>well</h1>
     <p>Sign in to the content management system</p>
     <div class="form-row"><label>Username</label><input type="text" id="login-user" placeholder="admin" autocomplete="username"></div>
     <div class="form-row"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"></div>
     <button class="btn-primary" onclick="doLogin()" style="width:100%;justify-content:center;margin-top:8px;">Sign In →</button>
     <div class="login-error" id="login-error"></div>
+    <p style="font-size:0.75rem;color:rgba(255,255,255,0.2);margin-top:24px;">Default password: inkwell2024</p>
   </div>
 </div>
 
@@ -71,7 +72,7 @@
 <div id="cms-app" style="display:none">
   <button class="cms-mobile-toggle" onclick="toggleSidebar()">☰</button>
   <aside class="cms-sidebar" id="cms-sidebar">
-    <div class="cms-sidebar-logo"><a href="index.html" style="color:var(--cream)">The CAHS & Effect</a></div>
+    <div class="cms-sidebar-logo"><a href="index.html" style="color:var(--cream)">The <span>CAHS</span> &amp; Effect</a></div>
     <ul class="cms-nav">
       <li><a href="#" class="active" data-section="dashboard" onclick="switchSection('dashboard',this)"><span class="icon">◈</span> Dashboard</a></li>
       <li><a href="#" data-section="articles"  onclick="switchSection('articles',this)"><span class="icon">✦</span> Articles</a></li>
@@ -130,13 +131,17 @@
     <div class="cms-section" id="section-settings">
       <div class="cms-topbar"><h1>Database Settings</h1><div class="db-status"><div class="db-dot" id="db-dot2"></div><span id="db-status-text2">—</span></div></div>
       <div class="info-box">
-        <strong>Neon + Netlify Setup</strong><br><br>
-        <span class="step-num">1</span> Go to <strong>app.neon.tech</strong>, create a project, copy the <strong>Connection string</strong> (starts with <code>postgresql://</code>).<br>
-        <span class="step-num">2</span> In <strong>Netlify → Site → Environment Variables</strong>, add:<br>
-        &nbsp;&nbsp;&nbsp;<code>DATABASE_URL</code> = your Neon connection string<br>
-        &nbsp;&nbsp;&nbsp;<code>CMS_SECRET</code> = any strong password you choose (this protects write access)<br>
-        <span class="step-num">3</span> Enter that same <code>CMS_SECRET</code> value below and click <strong>Save & Test</strong>.<br>
-        <span class="step-num">4</span> Redeploy your Netlify site (or trigger a new deploy) after adding the env vars.<br><br>
+        <strong>Turso + Cloudflare Setup</strong><br><br>
+        <span class="step-num">1</span> Go to <strong>turso.tech</strong>, sign up free, then run <code>turso db create inkwell</code> in the Turso CLI — or create a database from their dashboard.<br>
+        <span class="step-num">2</span> Go to <strong>turso.tech</strong>, create a database, then copy the <strong>Database URL</strong> and generate an <strong>Auth Token</strong>.<br>
+        <span class="step-num">3</span> In <strong>Cloudflare → Pages → Settings → Environment Variables</strong>, add these as secrets:<br>
+        &nbsp;&nbsp;&nbsp;<code>TURSO_URL</code> = your Turso database URL (e.g. libsql://your-db.turso.io)<br>
+        &nbsp;&nbsp;&nbsp;<code>TURSO_TOKEN</code> = your Turso auth token<br>
+        &nbsp;&nbsp;&nbsp;<code>CMS_SECRET</code> = any strong password you choose (protects write access)<br>
+        <span class="step-num">4</span> In Cloudflare → <strong>R2 → Create bucket</strong> (e.g. <code>cahs-effect-images</code>). Enable <strong>Public access</strong> and note your public URL (<code>https://pub-xxx.r2.dev</code>).<br>
+        <span class="step-num">5</span> In <strong>Pages → Settings → Functions → R2 bucket bindings</strong>, add: variable name <code>IMAGES_BUCKET</code>, select your bucket.<br>
+        <span class="step-num">6</span> Add <code>R2_PUBLIC_URL</code> as a secret env var (your <code>https://pub-xxx.r2.dev</code> URL from step 4).<br>
+        <span class="step-num">7</span> Trigger a new Cloudflare deploy, then enter your <code>CMS_SECRET</code> below and click <strong>Save & Test</strong>.<br><br>
         <strong>Note:</strong> The secret is stored only in this browser's localStorage. Tables are created automatically on first connection.
       </div>
       <div style="max-width:460px;">
@@ -150,9 +155,34 @@
         </div>
         <div id="db-result" style="margin-top:16px;font-size:0.85rem;min-height:20px;"></div>
       </div>
+      <!-- Cloudinary image uploads -->
+      <div style="margin-top:48px;padding-top:32px;border-top:1px solid rgba(255,255,255,0.08);">
+        <h3 style="color:var(--cream);font-size:1rem;margin-bottom:16px;">Image Uploads — Cloudinary</h3>
+        <div class="info-box" style="margin-bottom:20px;">
+          <strong>Free setup (no credit card needed):</strong><br>
+          <span class="step-num">1</span> Sign up free at <strong>cloudinary.com</strong>.<br>
+          <span class="step-num">2</span> In your Cloudinary dashboard go to <strong>Settings → Upload → Upload presets</strong>.<br>
+          <span class="step-num">3</span> Click <strong>Add upload preset</strong>, set Signing mode to <strong>Unsigned</strong>, save it.<br>
+          <span class="step-num">4</span> Copy your <strong>Cloud name</strong> (top of dashboard) and the <strong>Upload preset name</strong> into the fields below.
+        </div>
+        <div style="max-width:460px;">
+          <div class="form-grid-2">
+            <div class="form-row"><label>Cloud Name</label><input type="text" id="cloudinary-cloud-name" placeholder="your-cloud-name"></div>
+            <div class="form-row"><label>Upload Preset (unsigned)</label><input type="text" id="cloudinary-upload-preset" placeholder="your-preset-name"></div>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:4px;">
+            <button class="btn-primary" onclick="saveCloudinarySettings()">Save Cloudinary Settings</button>
+          </div>
+          <div id="cloudinary-result" style="margin-top:12px;font-size:0.85rem;min-height:20px;"></div>
+        </div>
+      </div>
+
       <div style="margin-top:48px;padding-top:32px;border-top:1px solid rgba(255,255,255,0.08);">
         <h3 style="color:var(--cream);font-size:1rem;margin-bottom:16px;">Danger Zone</h3>
-        <button class="btn-xs btn-delete" style="padding:10px 18px;" onclick="clearSecret()">Clear Saved Secret</button>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn-xs btn-delete" style="padding:10px 18px;" onclick="clearSecret()">Clear Saved Secret</button>
+          <button class="btn-xs btn-delete" style="padding:10px 18px;" onclick="clearCloudinarySettings()">Clear Cloudinary Settings</button>
+        </div>
       </div>
     </div>
   </main>
@@ -188,7 +218,7 @@
         <div class="img-upload-zone" id="art-drop-zone" ondragover="handleDragOver(event,'art-drop-zone')" ondragleave="handleDragLeave('art-drop-zone')" ondrop="handleDrop(event,'art')">
           <input type="file" id="art-file-input" accept="image/*" onchange="handleFileSelect(event,'art')">
           <div class="img-upload-icon">🖼</div>
-          <div class="img-upload-label"><strong>Click to browse</strong> or drag & drop</div>
+          <div class="img-upload-label"><strong>Click to browse</strong> or drag & drop<br>Uploads to Cloudinary</div>
         </div>
       </div>
       <div class="img-source-panel" id="art-url-panel">
@@ -207,8 +237,10 @@
         <button onclick="wrapText('art-body','<strong>','</strong>')"><b>Bold</b></button>
         <button onclick="wrapText('art-body','<em>','</em>')"><i>Italic</i></button>
         <button onclick="wrapText('art-body','<blockquote>','</blockquote>')">" Quote</button>
+        <button onclick="insertText('art-body','<br>')">↵ br</button>
+        <button onclick="insertText('art-body','&emsp;')">⇥ em space</button>
       </div>
-      <textarea id="art-body" placeholder="Article body HTML…" style="min-height:260px;"></textarea>
+      <textarea id="art-body" placeholder="Write your article here. Line breaks and spacing will appear exactly as you type them — no HTML required. You can still use the toolbar buttons above for headings, bold, quotes etc." style="min-height:260px;white-space:pre-wrap;font-family:'DM Sans',sans-serif;line-height:1.7;"></textarea>
     </div>
     <div class="form-actions">
       <button class="btn-xs btn-edit" onclick="closeModal('article-modal')">Cancel</button>
@@ -254,7 +286,7 @@
         <div class="img-upload-zone" id="wr-drop-zone" ondragover="handleDragOver(event,'wr-drop-zone')" ondragleave="handleDragLeave('wr-drop-zone')" ondrop="handleDrop(event,'wr')">
           <input type="file" id="wr-file-input" accept="image/*" onchange="handleFileSelect(event,'wr')">
           <div class="img-upload-icon">👤</div>
-          <div class="img-upload-label"><strong>Click to browse</strong> or drag & drop</div>
+          <div class="img-upload-label"><strong>Click to browse</strong> or drag & drop<br>Uploads to Cloudinary</div>
         </div>
       </div>
       <div class="img-source-panel" id="wr-url-panel">
@@ -275,25 +307,26 @@
 <script src="js/core.js"></script>
 <script>
 // ─── AUTH ─────────────────────────────────────────────────────────────
-const CREDS = { user:'admin', pass:'cahseffect2027' };
-let isLoggedIn = localStorage.getItem('gce_auth') === '1';
+const CREDS = { user:'admin', pass:'inkwell2024' };
+let isLoggedIn = localStorage.getItem('cahseffect_auth') === '1';
 
 function checkAuth() {
   if (isLoggedIn) showCMS(); else document.getElementById('login-screen').style.display='flex';
 }
 function doLogin() {
   const u=document.getElementById('login-user').value.trim(), p=document.getElementById('login-pass').value;
-  if (u===CREDS.user&&p===CREDS.pass) { localStorage.setItem('gce_auth','1'); isLoggedIn=true; showCMS(); }
+  if (u===CREDS.user&&p===CREDS.pass) { localStorage.setItem('cahseffect_auth','1'); isLoggedIn=true; showCMS(); }
   else document.getElementById('login-error').textContent='Incorrect username or password.';
 }
 document.getElementById('login-pass').addEventListener('keydown',e=>{ if(e.key==='Enter')doLogin(); });
-function doLogout(){ localStorage.removeItem('gce_auth'); location.reload(); }
+function doLogout(){ localStorage.removeItem('cahseffect_auth'); location.reload(); }
 
 async function showCMS() {
   document.getElementById('login-screen').style.display='none';
   document.getElementById('cms-app').style.display='flex';
   document.getElementById('cms-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   document.getElementById('db-secret').value = getCmsSecret();
+  loadCloudinaryForm();
   setSaving('Loading…',true);
   try {
     await syncFromDb();
@@ -605,7 +638,7 @@ async function syncFromDb(){
 
 function clearSecret(){
   if(!confirm('Clear saved CMS secret from this browser?'))return;
-  localStorage.removeItem('gce_cms_secret');
+  localStorage.removeItem('cahseffect_cms_secret');
   document.getElementById('db-secret').value='';
   showToast('Secret cleared');
 }
@@ -621,11 +654,38 @@ function handleDragOver(e,z){e.preventDefault();document.getElementById(z).class
 function handleDragLeave(z){document.getElementById(z).classList.remove('dragover');}
 function handleDrop(e,p){e.preventDefault();document.getElementById(p+'-drop-zone').classList.remove('dragover');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadImageFile(f,p);}
 function handleFileSelect(e,p){const f=e.target.files[0];if(f)loadImageFile(f,p);}
-function loadImageFile(file,prefix){
-  if(file.size>2*1024*1024)showToast('Large image — compressing…');
-  const reader=new FileReader();
-  reader.onload=e=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas'),M=1200;let w=img.width,h=img.height;if(w>M){h=Math.round(h*M/w);w=M;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);setImageData(prefix,c.toDataURL('image/jpeg',0.82));};img.src=e.target.result;};
-  reader.readAsDataURL(file);
+function getCloudinaryConfig(){
+  try { return JSON.parse(localStorage.getItem('cahseffect_cloudinary'))||{}; } catch { return {}; }
+}
+async function loadImageFile(file, prefix) {
+  const cfg = getCloudinaryConfig();
+  if (!cfg.cloudName || !cfg.uploadPreset) {
+    showToast('Cloudinary not configured — go to Database settings', 'error');
+    return;
+  }
+  // Show local preview immediately
+  setImageData(prefix, URL.createObjectURL(file));
+  showToast('Uploading to Cloudinary…');
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', cfg.uploadPreset);
+    // Optional: organise uploads into a folder
+    formData.append('folder', 'cahs-and-effect');
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${cfg.cloudName}/image/upload`,
+      { method: 'POST', body: formData }
+    );
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error?.message || `Upload failed (${res.status})`);
+    // Replace blob preview with permanent Cloudinary URL
+    setImageData(prefix, json.secure_url);
+    showToast('Image uploaded ✓', 'success');
+  } catch(e) {
+    showToast('Upload failed: ' + e.message, 'error');
+    console.error('Cloudinary upload error:', e);
+    clearImage(prefix);
+  }
 }
 function previewImgFromUrl(p){setImageData(p,document.getElementById(p==='art'?'art-image':'wr-avatar').value.trim());}
 function setImageData(prefix,src){
@@ -643,14 +703,48 @@ function clearImage(prefix){
 }
 function loadImageIntoModal(prefix,src){
   if(!src){clearImage(prefix);return;}
-  const isBase64=src.startsWith('data:');
+  // All stored images are now URLs (Cloudinary) — always show URL tab when editing
   const modalId=prefix==='art'?'article-modal':'writer-modal';
   const tabs=document.querySelectorAll(`#${modalId} .img-source-tab`);
-  if(isBase64){tabs.forEach((t,i)=>t.classList.toggle('active',i===0));document.getElementById(prefix+'-upload-panel').classList.add('active');document.getElementById(prefix+'-url-panel').classList.remove('active');}
-  else{tabs.forEach((t,i)=>t.classList.toggle('active',i===1));document.getElementById(prefix+'-upload-panel').classList.remove('active');document.getElementById(prefix+'-url-panel').classList.add('active');if(prefix==='art')document.getElementById('art-image').value=src;if(prefix==='wr')document.getElementById('wr-avatar').value=src;}
+  tabs.forEach((t,i)=>t.classList.toggle('active',i===1));
+  document.getElementById(prefix+'-upload-panel').classList.remove('active');
+  document.getElementById(prefix+'-url-panel').classList.add('active');
+  if(prefix==='art')document.getElementById('art-image').value=src;
+  if(prefix==='wr')document.getElementById('wr-avatar').value=src;
   setImageData(prefix,src);
 }
 function wrapText(id,b,a){const ta=document.getElementById(id);const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.substring(s,e);const rep=b+(sel||'text')+a;ta.value=ta.value.substring(0,s)+rep+ta.value.substring(e);ta.focus();ta.selectionStart=s+b.length;ta.selectionEnd=s+b.length+(sel||'text').length;}
+function insertText(id,text){const ta=document.getElementById(id);const s=ta.selectionStart;ta.value=ta.value.substring(0,s)+text+ta.value.substring(ta.selectionEnd);ta.focus();ta.selectionStart=ta.selectionEnd=s+text.length;}
+
+// ─── CLOUDINARY SETTINGS ──────────────────────────────────────────────
+function loadCloudinaryForm() {
+  const cfg = getCloudinaryConfig();
+  document.getElementById('cloudinary-cloud-name').value    = cfg.cloudName    || '';
+  document.getElementById('cloudinary-upload-preset').value = cfg.uploadPreset || '';
+  const result = document.getElementById('cloudinary-result');
+  if (cfg.cloudName && cfg.uploadPreset) {
+    result.textContent = '✓ Cloudinary configured — ' + cfg.cloudName;
+    result.style.color = '#6bba6b';
+  }
+}
+function saveCloudinarySettings() {
+  const cloudName    = document.getElementById('cloudinary-cloud-name').value.trim();
+  const uploadPreset = document.getElementById('cloudinary-upload-preset').value.trim();
+  if (!cloudName || !uploadPreset) { showToast('Both fields are required'); return; }
+  localStorage.setItem('cahseffect_cloudinary', JSON.stringify({ cloudName, uploadPreset }));
+  const result = document.getElementById('cloudinary-result');
+  result.textContent = '✓ Saved — images will upload to ' + cloudName;
+  result.style.color = '#6bba6b';
+  showToast('Cloudinary settings saved ✓', 'success');
+}
+function clearCloudinarySettings() {
+  if (!confirm('Clear Cloudinary settings from this browser?')) return;
+  localStorage.removeItem('cahseffect_cloudinary');
+  document.getElementById('cloudinary-cloud-name').value    = '';
+  document.getElementById('cloudinary-upload-preset').value = '';
+  document.getElementById('cloudinary-result').textContent  = '';
+  showToast('Cloudinary settings cleared');
+}
 
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 checkAuth();
