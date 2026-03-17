@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Article — The Inkwell</title>
+  <title>Article — The Gorgon + The CAHS & Effect</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
     .article-progress{position:fixed;top:var(--nav-height);left:0;right:0;z-index:900;height:3px;}
@@ -13,7 +13,7 @@
 </head>
 <body>
 <nav id="navbar"><div class="nav-inner">
-  <a href="index.html" class="nav-logo">The <span>Ink</span>well</a>
+  <a href="index.html" class="nav-logo">The Gorgon + The CAHS & Effect</a>
   <ul class="nav-links"><li><a href="index.html">Home</a></li><li><a href="creative.html">Creative</a></li><li><a href="news.html">News</a></li><li><a href="writers.html">Writers</a></li><li><a href="cms.html" class="nav-cta">Admin</a></li></ul>
   <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
 </div></nav>
@@ -31,11 +31,11 @@
 </div>
 <footer><div class="container">
   <div class="footer-grid">
-    <div><div class="footer-logo">The <span>Ink</span>well</div><p class="footer-desc">Independent writing that takes its time.</p></div>
+    <div><div class="footer-logo">The Gorgon + The CAHS & Effect</div><p class="footer-desc">Independent writing that takes its time.</p></div>
     <div class="footer-col"><h4>Sections</h4><ul><li><a href="creative.html">Creative Writing</a></li><li><a href="news.html">News & Issues</a></li><li><a href="writers.html">Our Writers</a></li></ul></div>
     <div class="footer-col"><h4>Admin</h4><ul><li><a href="cms.html">Content Manager</a></li></ul></div>
   </div>
-  <div class="footer-bottom"><span>© <span id="footer-year"></span> The Inkwell.</span></div>
+  <div class="footer-bottom"><span>© <span id="footer-year"></span> The Gorgon + The CAHS & Effect.</span></div>
 </div></footer>
 <div class="toast" id="global-toast"></div>
 <script src="js/core.js"></script>
@@ -53,7 +53,7 @@
     const backHref=article.type==='creative'?'creative.html':'news.html';
     const backLabel=article.type==='creative'?'Creative Writing':'News';
     const issueInfo=article.issueId?data.issues.find(i=>i.id===article.issueId):null;
-    document.title=`${article.title} — The Inkwell`;
+    document.title=`${article.title} — The Gorgon + The CAHS & Effect`;
     const heroImg=article.coverImage?`<div class="article-single-hero"><img src="${article.coverImage}" alt="${article.title}"></div>`:'';
     document.getElementById('article-content').innerHTML=`
       <article class="article-single">
@@ -88,7 +88,7 @@
       </article>
       <section style="background:var(--cream);padding:64px 0;">
         <div class="container">
-          <div class="section-header"><div class="ornament">Continue Reading</div><h2>More from The Inkwell</h2></div>
+          <div class="section-header"><div class="ornament">Continue Reading</div><h2>More from The Gorgon + The CAHS & Effect</h2></div>
           <div class="related-grid">${data.articles.filter(a=>a.id!==article.id&&a.status==='published').slice(0,3).map(a=>buildArticleCard(a,data)).join('')}</div>
         </div>
       </section>`;
