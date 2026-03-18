@@ -1,9 +1,6 @@
 {
   "name": "cahs-and-effect",
   "version": "1.0.0",
-  "description": "The CAHS & Effect journalism site — Cloudflare Pages + Turso",
-  "type": "module",
-  "dependencies": {
-    "@libsql/client": "^0.6.0"
-  }
+  "description": "The CAHS & Effect journalism site — Cloudflare Pages + Turso HTTP API",
+  "type": "module"
 }
