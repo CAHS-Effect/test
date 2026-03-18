@@ -237,7 +237,7 @@
         <button onclick="wrapText('art-body','<em>','</em>')"><i>Italic</i></button>
         <button onclick="wrapText('art-body','<blockquote>','</blockquote>')">" Quote</button>
         <button onclick="insertText('art-body','<br>')">↵ br</button>
-        <button onclick="insertText('art-body','&emsp;')">⇥ em space</button>
+        <button onclick="insertText('art-body','\u00a0\u00a0\u00a0\u00a0')">⇥ em space</button>
       </div>
       <textarea id="art-body" placeholder="Write your article here. Line breaks and spacing will appear exactly as you type them — no HTML required. You can still use the toolbar buttons above for headings, bold, quotes etc." style="min-height:260px;white-space:pre-wrap;font-family:'DM Sans',sans-serif;line-height:1.7;"></textarea>
     </div>
@@ -746,20 +746,22 @@ function clearCloudinarySettings() {
 }
 
 // ─── BODY WHITESPACE ENCODING ────────────────────────────────────────
-// Converts plain newlines/tabs typed in the textarea into HTML equivalents
-// so they render correctly on the public article page.
+// The textarea uses 4 non-breaking spaces (\u00a0 ×4) as the "tab" unit —
+// they survive textarea value assignment reliably across all browsers.
+// On save they become &emsp; in the stored HTML; on load they come back.
+const TAB_CHAR = '\u00a0\u00a0\u00a0\u00a0';  // 4 non-breaking spaces
+
 function encodeBodyWhitespace(text) {
   return text
     .trim()
     .split('\n')
-    .map(line => line.replace(/\t/g, '&emsp;'))  // tabs → em space
-    .join('<br>\n');                              // newlines → <br>
+    .map(line => line.split(TAB_CHAR).join('&emsp;'))  // nbsp×4 → &emsp;
+    .join('<br>\n');                                   // newlines → <br>
 }
-// Reverses the above when loading into the editor for re-editing
 function decodeBodyWhitespace(html) {
   return html
-    .replace(/<br>\s*/gi, '\n')   // <br> → newline
-    .replace(/&emsp;/gi, '\t');    // &emsp; → tab
+    .replace(/<br>\s*/gi, '\n')       // <br> → newline
+    .replace(/&emsp;/gi, TAB_CHAR);    // &emsp; → nbsp×4
 }
 
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
