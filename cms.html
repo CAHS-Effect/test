@@ -58,7 +58,7 @@
 <!-- LOGIN -->
 <div id="login-screen" class="cms-login">
   <div class="login-box">
-    <h1>The <span style="color:var(--accent)">Ink</span>well</h1>
+    <h1>The CAHS & Effect</h1>
     <p>Sign in to the content management system</p>
     <div class="form-row"><label>Username</label><input type="text" id="login-user" placeholder="admin" autocomplete="username"></div>
     <div class="form-row"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"></div>
@@ -135,7 +135,7 @@
         <span class="step-num">1</span> Go to <strong>turso.tech</strong>, sign up free, then run <code>turso db create inkwell</code> in the Turso CLI — or create a database from their dashboard.<br>
         <span class="step-num">2</span> Go to <strong>turso.tech</strong>, create a database, then copy the <strong>Database URL</strong> and generate an <strong>Auth Token</strong>.<br>
         <span class="step-num">3</span> In <strong>Cloudflare → Pages → Settings → Environment Variables</strong>, add these as secrets:<br>
-        &nbsp;&nbsp;&nbsp;<code>TURSO_URL</code> = your Turso database URL (e.g. libsql://your-db.turso.io)<br>
+        &nbsp;&nbsp;&nbsp;<code>TURSO_URL</code> = your Turso database URL — use <strong>https://</strong> not libsql:// (e.g. https://your-db.turso.io)<br>
         &nbsp;&nbsp;&nbsp;<code>TURSO_TOKEN</code> = your Turso auth token<br>
         &nbsp;&nbsp;&nbsp;<code>CMS_SECRET</code> = any strong password you choose (protects write access)<br>
         <span class="step-num">4</span> In Cloudflare → <strong>R2 → Create bucket</strong> (e.g. <code>cahs-effect-images</code>). Enable <strong>Public access</strong> and note your public URL (<code>https://pub-xxx.r2.dev</code>).<br>
@@ -307,7 +307,7 @@
 <script src="js/core.js"></script>
 <script>
 // ─── AUTH ─────────────────────────────────────────────────────────────
-const CREDS = { user:'admin', pass:'inkwell2024' };
+const CREDS = { user:'admin', pass:'frankfiles2026' };
 let isLoggedIn = localStorage.getItem('cahseffect_auth') === '1';
 
 function checkAuth() {
@@ -442,7 +442,7 @@ function openArticleModal(id){
     document.getElementById('art-issue').value=art.issueId||'';
     document.getElementById('art-date').value=art.date||'';
     document.getElementById('art-readtime').value=art.readTime||5;
-    document.getElementById('art-body').value=art.body||'';
+    document.getElementById('art-body').value=decodeBodyWhitespace(art.body||'');
     document.getElementById('art-file-input').value='';
     loadImageIntoModal('art',art.coverImage||'');
   } else {
@@ -477,7 +477,7 @@ async function saveArticle(){
     date:document.getElementById('art-date').value,
     readTime:parseInt(document.getElementById('art-readtime').value)||5,
     coverImage:document.getElementById('art-image-data').value,
-    body:document.getElementById('art-body').value.trim()
+    body:encodeBodyWhitespace(document.getElementById('art-body').value)
   };
   closeModal('article-modal');
   setSaving('Saving article…',true);
@@ -744,6 +744,23 @@ function clearCloudinarySettings() {
   document.getElementById('cloudinary-upload-preset').value = '';
   document.getElementById('cloudinary-result').textContent  = '';
   showToast('Cloudinary settings cleared');
+}
+
+// ─── BODY WHITESPACE ENCODING ────────────────────────────────────────
+// Converts plain newlines/tabs typed in the textarea into HTML equivalents
+// so they render correctly on the public article page.
+function encodeBodyWhitespace(text) {
+  return text
+    .trim()
+    .split('\n')
+    .map(line => line.replace(/\t/g, '&emsp;'))  // tabs → em space
+    .join('<br>\n');                              // newlines → <br>
+}
+// Reverses the above when loading into the editor for re-editing
+function decodeBodyWhitespace(html) {
+  return html
+    .replace(/<br>\s*/gi, '\n')   // <br> → newline
+    .replace(/&emsp;/gi, '\t');    // &emsp; → tab
 }
 
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
