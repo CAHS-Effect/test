@@ -207,7 +207,7 @@ img { max-width: 100%; display: block; }
 .hero-stat-num {
   font-family: 'Playfair Display', serif;
   font-size: 3.5rem; font-weight: 900; line-height: 1;
-  color: var(--ink);
+  color: var(--cream);
 }
 .hero-stat-label {
   font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase;
@@ -366,17 +366,60 @@ img { max-width: 100%; display: block; }
 }
 .article-single-hero img { width: 100%; height: 100%; object-fit: cover; }
 .article-body {
-  font-size: 1.05rem; line-height: 1.9; color: var(--ink);
-  font-family: 'Cormorant Garamond', serif; font-size: 1.15rem;
+  font-size: 1.15rem; line-height: 1.9; color: var(--ink);
+  font-family: 'Cormorant Garamond', serif;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
+/* Reset white-space on block elements so pre-wrap doesn't break their styling */
+.article-body p,
+.article-body h1,
+.article-body h2,
+.article-body h3,
+.article-body blockquote,
+.article-body .article-title { white-space: normal; }
+
 .article-body p { margin-bottom: 1.5em; }
-.article-body h2 { font-size: 1.6rem; margin: 2em 0 0.8em; }
+
+/* Headings */
+.article-body .article-title {
+  font-family: 'Playfair Display', serif !important;
+  font-size: 2.6rem !important;
+  font-weight: 900 !important;
+  line-height: 1.1 !important;
+  color: var(--ink) !important;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.3em;
+  margin: 1.2em 0 0.6em;
+  display: block !important;
+}
+.article-body h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 900; margin: 1.8em 0 0.6em; display: block; line-height: 1.15; }
+.article-body h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin: 2em 0 0.8em; }
+.article-body h3 { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; margin: 1.6em 0 0.6em; }
+
+/* Blockquote */
 .article-body blockquote {
   border-left: 3px solid var(--accent);
   padding: 16px 28px; margin: 2em 0;
   font-style: italic; color: var(--mid);
   background: var(--cream);
 }
+
+/* Inline images */
+.article-body img {
+  max-width: 100%; height: auto;
+  border-radius: 2px;
+}
+.article-body img[style*="float"] { margin-bottom: 0.5em; }
+
+/* Horizontal rule */
+.article-body hr {
+  border: none; border-top: 1px solid var(--border);
+  margin: 2.5em 0;
+}
+
+/* Clearfix for floated images */
+.article-body::after { content: ''; display: table; clear: both; }
 
 /* ─── CMS ─── */
 .cms-page { background: var(--ink); min-height: 100vh; color: var(--cream); padding-top: 0; }
