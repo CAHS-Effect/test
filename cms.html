@@ -24,9 +24,19 @@
     .img-clear-btn{margin-top:8px;font-size:0.72rem;color:rgba(255,255,255,0.3);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:color 0.2s;display:none;}
     .img-clear-btn.show{display:inline-block;}
     .img-clear-btn:hover{color:var(--accent);}
-    .toolbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;}
-    .toolbar button{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+    .toolbar{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;align-items:center;}
+    .toolbar button{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);padding:5px 11px;font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;line-height:1.4;}
     .toolbar button:hover{background:rgba(255,255,255,0.15);color:#fff;}
+    .toolbar-sep{width:1px;height:22px;background:rgba(255,255,255,0.12);margin:0 4px;flex-shrink:0;}
+    .toolbar-label{font-size:0.65rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.25);padding:0 4px;user-select:none;}
+    /* Inline image insertion dialog */
+    .img-insert-bar{display:none;gap:8px;align-items:center;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);padding:8px 12px;margin-bottom:6px;}
+    .img-insert-bar.open{display:flex;flex-wrap:wrap;}
+    .img-insert-bar input{flex:1;min-width:200px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--cream);padding:6px 10px;font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;}
+    .img-insert-bar input:focus{border-color:var(--accent);}
+    .img-insert-bar label{font-size:0.72rem;color:rgba(255,255,255,0.4);white-space:nowrap;}
+    .img-insert-bar select{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--cream);padding:6px 8px;font-family:'DM Sans',sans-serif;font-size:0.78rem;outline:none;}
+    .img-insert-bar select option{background:#1e1c19;}
     .cms-mobile-toggle{display:none;position:fixed;top:16px;left:16px;z-index:9001;background:var(--accent);color:#fff;border:none;padding:8px 14px;font-size:1.2rem;cursor:pointer;}
     @media(max-width:768px){.cms-mobile-toggle{display:block;}}
     .tab-bar{display:flex;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:32px;}
@@ -230,16 +240,45 @@
     <div class="form-row">
       <label>Body (HTML supported)</label>
       <div class="toolbar">
-        <button onclick="wrapText('art-body','<p>','</p>')">¶ Para</button>
+        <span class="toolbar-label">Heading</span>
+        <button onclick="wrapText('art-body','<title>','</title>')" title="Page/section title — large display text">Title</button>
+        <button onclick="wrapText('art-body','<h1>','</h1>')">H1</button>
         <button onclick="wrapText('art-body','<h2>','</h2>')">H2</button>
         <button onclick="wrapText('art-body','<h3>','</h3>')">H3</button>
+        <div class="toolbar-sep"></div>
+        <span class="toolbar-label">Format</span>
+        <button onclick="wrapText('art-body','<p>','</p>')">¶ Para</button>
         <button onclick="wrapText('art-body','<strong>','</strong>')"><b>Bold</b></button>
         <button onclick="wrapText('art-body','<em>','</em>')"><i>Italic</i></button>
         <button onclick="wrapText('art-body','<blockquote>','</blockquote>')">" Quote</button>
+        <div class="toolbar-sep"></div>
+        <span class="toolbar-label">Insert</span>
+        <button onclick="toggleImgInsertBar()" title="Insert an image inline">🖼 Image</button>
         <button onclick="insertText('art-body','<br>')">↵ br</button>
         <button onclick="insertText('art-body','\u00a0\u00a0\u00a0\u00a0')">⇥ em space</button>
+        <button onclick="insertText('art-body','<hr>')" title="Horizontal rule / divider">― Rule</button>
       </div>
-      <textarea id="art-body" placeholder="Write your article here. Line breaks and spacing will appear exactly as you type them — no HTML required. You can still use the toolbar buttons above for headings, bold, quotes etc." style="min-height:260px;white-space:pre-wrap;font-family:'DM Sans',sans-serif;line-height:1.7;"></textarea>
+
+      <!-- Inline image insertion bar (shown when 🖼 Image is clicked) -->
+      <div class="img-insert-bar" id="img-insert-bar">
+        <label>URL</label>
+        <input type="url" id="img-insert-url" placeholder="https://… or paste a Cloudinary URL">
+        <label>Alt text</label>
+        <input type="text" id="img-insert-alt" placeholder="Describe the image…" style="max-width:180px;">
+        <label>Align</label>
+        <select id="img-insert-align">
+          <option value="block">Full width</option>
+          <option value="left">Float left</option>
+          <option value="right">Float right</option>
+          <option value="center">Centred</option>
+        </select>
+        <button onclick="uploadInlineImage()" style="background:rgba(200,57,43,0.2);color:var(--accent);border:1px solid rgba(200,57,43,0.3);padding:5px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.78rem;">⬆ Upload file</button>
+        <input type="file" id="img-insert-file" accept="image/*" style="display:none" onchange="handleInlineFileSelect(event)">
+        <button onclick="insertInlineImage()" style="background:rgba(100,200,100,0.12);color:#6bba6b;border:1px solid rgba(100,200,100,0.25);padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.78rem;">Insert →</button>
+        <button onclick="toggleImgInsertBar()" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:1rem;padding:2px 6px;">✕</button>
+      </div>
+
+      <textarea id="art-body" placeholder="Write your article here. Use the toolbar above to add headings, formatting, images and more." style="min-height:300px;white-space:pre-wrap;font-family:'DM Sans',sans-serif;line-height:1.7;"></textarea>
     </div>
     <div class="form-actions">
       <button class="btn-xs btn-edit" onclick="closeModal('article-modal')">Cancel</button>
@@ -306,7 +345,7 @@
 <script src="js/core.js"></script>
 <script>
 // ─── AUTH ─────────────────────────────────────────────────────────────
-const CREDS = { user:'admin', pass:'frankfiles2026' };
+const CREDS = { user:'admin', pass:'frankfiles2027' };
 let isLoggedIn = localStorage.getItem('cahseffect_auth') === '1';
 
 function checkAuth() {
@@ -714,6 +753,67 @@ function loadImageIntoModal(prefix,src){
 }
 function wrapText(id,b,a){const ta=document.getElementById(id);const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.substring(s,e);const rep=b+(sel||'text')+a;ta.value=ta.value.substring(0,s)+rep+ta.value.substring(e);ta.focus();ta.selectionStart=s+b.length;ta.selectionEnd=s+b.length+(sel||'text').length;}
 function insertText(id,text){const ta=document.getElementById(id);const s=ta.selectionStart;ta.value=ta.value.substring(0,s)+text+ta.value.substring(ta.selectionEnd);ta.focus();ta.selectionStart=ta.selectionEnd=s+text.length;}
+
+// ─── INLINE IMAGE INSERTION ───────────────────────────────────────────
+function toggleImgInsertBar(){
+  const bar=document.getElementById('img-insert-bar');
+  bar.classList.toggle('open');
+  if(bar.classList.contains('open')) document.getElementById('img-insert-url').focus();
+}
+
+function uploadInlineImage(){
+  document.getElementById('img-insert-file').click();
+}
+
+async function handleInlineFileSelect(e){
+  const file=e.target.files[0]; if(!file)return;
+  const cfg=getCloudinaryConfig();
+  if(!cfg.cloudName||!cfg.uploadPreset){
+    showToast('Cloudinary not configured — go to Database settings','error');
+    return;
+  }
+  showToast('Uploading image…');
+  try {
+    const fd=new FormData();
+    fd.append('file',file);
+    fd.append('upload_preset',cfg.uploadPreset);
+    fd.append('folder','cahs-and-effect');
+    const res=await fetch(`https://api.cloudinary.com/v1_1/${cfg.cloudName}/image/upload`,{method:'POST',body:fd});
+    const json=await res.json();
+    if(!res.ok) throw new Error(json.error?.message||'Upload failed');
+    document.getElementById('img-insert-url').value=json.secure_url;
+    if(!document.getElementById('img-insert-alt').value){
+      document.getElementById('img-insert-alt').value=file.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');
+    }
+    showToast('Uploaded ✓ — click Insert to add to article','success');
+  } catch(err){
+    showToast('Upload failed: '+err.message,'error');
+  }
+  e.target.value='';
+}
+
+function insertInlineImage(){
+  const url=document.getElementById('img-insert-url').value.trim();
+  if(!url){showToast('Please enter or upload an image URL first');return;}
+  const alt=document.getElementById('img-insert-alt').value.trim()||'';
+  const align=document.getElementById('img-insert-align').value;
+
+  let styleStr='';
+  if(align==='left')  styleStr=' style="float:left;margin:0 1.5em 1em 0;max-width:45%;"';
+  if(align==='right') styleStr=' style="float:right;margin:0 0 1em 1.5em;max-width:45%;"';
+  if(align==='center')styleStr=' style="display:block;margin:1.5em auto;max-width:80%;"';
+  if(align==='block') styleStr=' style="display:block;width:100%;margin:1.5em 0;"';
+
+  const tag=`<img src="${url}" alt="${alt}"${styleStr}>`;
+  insertText('art-body', tag);
+
+  // Reset and close the bar
+  document.getElementById('img-insert-url').value='';
+  document.getElementById('img-insert-alt').value='';
+  document.getElementById('img-insert-align').value='block';
+  document.getElementById('img-insert-bar').classList.remove('open');
+  showToast('Image inserted ✓','success');
+}
 
 // ─── CLOUDINARY SETTINGS ──────────────────────────────────────────────
 function loadCloudinaryForm() {
