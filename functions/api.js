@@ -92,7 +92,7 @@ async function ensureSchema(env) {
             excerpt TEXT DEFAULT '', body TEXT DEFAULT '',
             author_id TEXT DEFAULT '', issue_id TEXT DEFAULT '',
             date TEXT DEFAULT '', read_time INTEGER DEFAULT 5,
-            cover_image TEXT DEFAULT '',
+            cover_image TEXT DEFAULT '', hero_image TEXT DEFAULT '',
             created_at TEXT DEFAULT (datetime('now')),
             updated_at TEXT DEFAULT (datetime('now')))` },
     { q: `CREATE TABLE IF NOT EXISTS writers (
@@ -106,6 +106,11 @@ async function ensureSchema(env) {
             created_at TEXT DEFAULT (datetime('now')),
             updated_at TEXT DEFAULT (datetime('now')))` },
   ]);
+  // Migration: add hero_image to databases created before this column existed.
+  // Fails harmlessly (duplicate column) once the column is already present.
+  try {
+    await batch(env, [{ q: `ALTER TABLE articles ADD COLUMN hero_image TEXT DEFAULT ''` }]);
+  } catch (e) { /* column already exists */ }
 }
 
 // ─── Row mappers ──────────────────────────────────────────────────────
@@ -113,7 +118,8 @@ const mapArticle = r => ({
   id: r.id, type: r.type, status: r.status, title: r.title,
   excerpt: r.excerpt||'', body: r.body||'',
   author: r.author_id||'', issueId: r.issue_id||'',
-  date: r.date||'', readTime: Number(r.read_time)||5, coverImage: r.cover_image||''
+  date: r.date||'', readTime: Number(r.read_time)||5, coverImage: r.cover_image||'',
+  heroImage: r.hero_image||''
 });
 const mapWriter = r => ({ id:r.id, name:r.name, role:r.role||'', bio:r.bio||'', avatar:r.avatar||'' });
 const mapIssue  = r => ({ id:r.id, title:r.title, date:r.date||'', description:r.description||'' });
@@ -151,15 +157,15 @@ async function handlePost(env, resource, data) {
   const id = data.id || (resource[0] + Date.now());
   if (resource === 'articles') {
     await query(env,
-      `INSERT INTO articles (id,type,status,title,excerpt,body,author_id,issue_id,date,read_time,cover_image)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?)
+      `INSERT INTO articles (id,type,status,title,excerpt,body,author_id,issue_id,date,read_time,cover_image,hero_image)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
        ON CONFLICT(id) DO UPDATE SET type=excluded.type,status=excluded.status,title=excluded.title,
          excerpt=excluded.excerpt,body=excluded.body,author_id=excluded.author_id,
          issue_id=excluded.issue_id,date=excluded.date,read_time=excluded.read_time,
-         cover_image=excluded.cover_image,updated_at=datetime('now')`,
+         cover_image=excluded.cover_image,hero_image=excluded.hero_image,updated_at=datetime('now')`,
       [id, data.type||'creative', data.status||'draft', data.title,
        data.excerpt||'', data.body||'', data.author||'', data.issueId||'',
-       data.date||'', data.readTime||5, data.coverImage||'']
+       data.date||'', data.readTime||5, data.coverImage||'', data.heroImage||'']
     );
     const rows = await query(env, 'SELECT * FROM articles WHERE id=?', [id]);
     return ok(mapArticle(rows[0]), 201);
@@ -192,9 +198,9 @@ async function handlePut(env, resource, id, data) {
   if (resource === 'articles') {
     await query(env,
       `UPDATE articles SET type=?,status=?,title=?,excerpt=?,body=?,author_id=?,
-         issue_id=?,date=?,read_time=?,cover_image=?,updated_at=datetime('now') WHERE id=?`,
+         issue_id=?,date=?,read_time=?,cover_image=?,hero_image=?,updated_at=datetime('now') WHERE id=?`,
       [data.type, data.status, data.title, data.excerpt||'', data.body||'',
-       data.author||'', data.issueId||'', data.date||'', data.readTime||5, data.coverImage||'', id]
+       data.author||'', data.issueId||'', data.date||'', data.readTime||5, data.coverImage||'', data.heroImage||'', id]
     );
     const rows = await query(env, 'SELECT * FROM articles WHERE id=?', [id]);
     return ok(mapArticle(rows[0]));
