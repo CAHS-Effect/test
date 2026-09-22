@@ -218,7 +218,7 @@
       <div class="form-row"><label>Read Time (minutes)</label><input type="number" id="art-readtime" value="5" min="1" max="60"></div>
     </div>
     <div class="form-row">
-      <label>Cover Image (optional)</label>
+      <label>Cover Image — thumbnail (optional)</label>
       <div class="img-source-tabs">
         <button type="button" class="img-source-tab active" onclick="switchImgTab('art','upload',this)">⬆ Upload File</button>
         <button type="button" class="img-source-tab" onclick="switchImgTab('art','url',this)">🔗 Image URL</button>
@@ -236,6 +236,28 @@
       <img id="art-img-preview" class="img-preview" alt="Cover preview">
       <button type="button" class="img-clear-btn" id="art-img-clear" onclick="clearImage('art')">✕ Remove image</button>
       <input type="hidden" id="art-image-data">
+      <div style="font-size:0.75rem;color:rgba(255,255,255,0.45);margin-top:6px;">Used for the article card thumbnail across the site.</div>
+    </div>
+    <div class="form-row">
+      <label>Hero Image — article page banner (optional)</label>
+      <div class="img-source-tabs">
+        <button type="button" class="img-source-tab active" onclick="switchImgTab('arth','upload',this)">⬆ Upload File</button>
+        <button type="button" class="img-source-tab" onclick="switchImgTab('arth','url',this)">🔗 Image URL</button>
+      </div>
+      <div class="img-source-panel active" id="arth-upload-panel">
+        <div class="img-upload-zone" id="arth-drop-zone" ondragover="handleDragOver(event,'arth-drop-zone')" ondragleave="handleDragLeave('arth-drop-zone')" ondrop="handleDrop(event,'arth')">
+          <input type="file" id="arth-file-input" accept="image/*" onchange="handleFileSelect(event,'arth')">
+          <div class="img-upload-icon">🖼</div>
+          <div class="img-upload-label"><strong>Click to browse</strong> or drag & drop<br>Uploads to Cloudinary</div>
+        </div>
+      </div>
+      <div class="img-source-panel" id="arth-url-panel">
+        <input type="url" id="arth-image" placeholder="https://…" oninput="previewImgFromUrl('arth')">
+      </div>
+      <img id="arth-img-preview" class="img-preview" alt="Hero preview">
+      <button type="button" class="img-clear-btn" id="arth-img-clear" onclick="clearImage('arth')">✕ Remove image</button>
+      <input type="hidden" id="arth-image-data">
+      <div style="font-size:0.75rem;color:rgba(255,255,255,0.45);margin-top:6px;">Used for the full-width image at the top of the article. Leave blank to reuse the cover image.</div>
     </div>
     <div class="form-row">
       <label>Body (HTML supported)</label>
@@ -482,7 +504,9 @@ function openArticleModal(id){
     document.getElementById('art-readtime').value=art.readTime||5;
     document.getElementById('art-body').value=decodeBodyWhitespace(art.body||'');
     document.getElementById('art-file-input').value='';
+    document.getElementById('arth-file-input').value='';
     loadImageIntoModal('art',art.coverImage||'');
+    loadImageIntoModal('arth',art.heroImage||'');
   } else {
     document.getElementById('article-modal-title').textContent='New Article';
     ['art-id','art-title','art-excerpt','art-body'].forEach(i=>document.getElementById(i).value='');
@@ -492,10 +516,14 @@ function openArticleModal(id){
     document.getElementById('art-date').value=new Date().toISOString().split('T')[0];
     document.getElementById('art-readtime').value=5;
     document.getElementById('art-file-input').value='';
+    document.getElementById('arth-file-input').value='';
     clearImage('art');
-    document.querySelectorAll('#article-modal .img-source-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
-    document.getElementById('art-upload-panel').classList.add('active');
-    document.getElementById('art-url-panel').classList.remove('active');
+    clearImage('arth');
+    ['art','arth'].forEach(p=>{
+      document.querySelectorAll(`#article-modal .img-source-tab[onclick*="'${p}'"]`).forEach((t,i)=>t.classList.toggle('active',i===0));
+      document.getElementById(p+'-upload-panel').classList.add('active');
+      document.getElementById(p+'-url-panel').classList.remove('active');
+    });
   }
   document.getElementById('article-modal').classList.add('open');
 }
@@ -515,6 +543,7 @@ async function saveArticle(){
     date:document.getElementById('art-date').value,
     readTime:parseInt(document.getElementById('art-readtime').value)||5,
     coverImage:document.getElementById('art-image-data').value,
+    heroImage:document.getElementById('arth-image-data').value,
     body:encodeBodyWhitespace(document.getElementById('art-body').value)
   };
   closeModal('article-modal');
@@ -725,7 +754,8 @@ async function loadImageFile(file, prefix) {
     clearImage(prefix);
   }
 }
-function previewImgFromUrl(p){setImageData(p,document.getElementById(p==='art'?'art-image':'wr-avatar').value.trim());}
+const IMG_URL_FIELD={art:'art-image',arth:'arth-image',wr:'wr-avatar'};
+function previewImgFromUrl(p){setImageData(p,document.getElementById(IMG_URL_FIELD[p]).value.trim());}
 function setImageData(prefix,src){
   document.getElementById(prefix+'-image-data').value=src;
   const preview=document.getElementById(prefix+'-img-preview'),clearBtn=document.getElementById(prefix+'-img-clear');
@@ -734,21 +764,20 @@ function setImageData(prefix,src){
 }
 function clearImage(prefix){
   document.getElementById(prefix+'-image-data').value='';
-  if(prefix==='art')document.getElementById('art-image').value='';
-  if(prefix==='wr')document.getElementById('wr-avatar').value='';
+  if(IMG_URL_FIELD[prefix])document.getElementById(IMG_URL_FIELD[prefix]).value='';
   const fi=document.getElementById(prefix+'-file-input');if(fi)fi.value='';
   setImageData(prefix,'');
 }
+const IMG_MODAL_ID={art:'article-modal',arth:'article-modal',wr:'writer-modal'};
 function loadImageIntoModal(prefix,src){
   if(!src){clearImage(prefix);return;}
   // All stored images are now URLs (Cloudinary) — always show URL tab when editing
-  const modalId=prefix==='art'?'article-modal':'writer-modal';
-  const tabs=document.querySelectorAll(`#${modalId} .img-source-tab`);
+  const modalId=IMG_MODAL_ID[prefix];
+  const tabs=document.querySelectorAll(`#${modalId}[id] .img-source-tab[onclick*="'${prefix}'"]`);
   tabs.forEach((t,i)=>t.classList.toggle('active',i===1));
   document.getElementById(prefix+'-upload-panel').classList.remove('active');
   document.getElementById(prefix+'-url-panel').classList.add('active');
-  if(prefix==='art')document.getElementById('art-image').value=src;
-  if(prefix==='wr')document.getElementById('wr-avatar').value=src;
+  if(IMG_URL_FIELD[prefix])document.getElementById(IMG_URL_FIELD[prefix]).value=src;
   setImageData(prefix,src);
 }
 function wrapText(id,b,a){const ta=document.getElementById(id);const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.substring(s,e);const rep=b+(sel||'text')+a;ta.value=ta.value.substring(0,s)+rep+ta.value.substring(e);ta.focus();ta.selectionStart=s+b.length;ta.selectionEnd=s+b.length+(sel||'text').length;}

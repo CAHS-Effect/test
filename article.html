@@ -54,7 +54,8 @@
     const backLabel=article.type==='creative'?'Creative Writing':'News';
     const issueInfo=article.issueId?data.issues.find(i=>i.id===article.issueId):null;
     document.title=`${article.title} — The CAHS & Effect`;
-    const heroImg=article.coverImage?`<div class="article-single-hero"><img src="${article.coverImage}" alt="${article.title}"></div>`:'';
+    const heroSrc=article.heroImage||article.coverImage;
+    const heroImg=heroSrc?`<div class="article-single-hero"><img src="${heroSrc}" alt="${article.title}"></div>`:'';
     document.getElementById('article-content').innerHTML=`
       <article class="article-single">
         <div class="container-narrow">
