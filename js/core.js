@@ -13,7 +13,7 @@
 const API      = '/api';
 const CACHE_KEY  = 'cahseffect_cache';
 const SECRET_KEY = 'cahseffect_cms_secret';
-
+// comment
 // ─── Local cache ──────────────────────────────────────────────────────
 const Cache = {
   get()    { try { return JSON.parse(localStorage.getItem(CACHE_KEY)); } catch { return null; } },
