@@ -132,8 +132,13 @@ const Store = {
 
   // Test the connection + auth with the CMS secret
   async testConnection() {
-    // Public read test
+    // Public read test (DB connectivity)
     const data = await apiFetch('GET', { resource: 'all' });
+    // Authenticated check — this is the one that actually verifies
+    // your CMS Secret matches the CMS_SECRET env var. Without this,
+    // the test above can report "Connected" even with a wrong secret,
+    // since public reads don't require auth.
+    await apiFetch('GET', { resource: 'authcheck' });
     return data;
   },
 
