@@ -262,7 +262,13 @@ export async function onRequest(context) {
   const method   = request.method;
 
   try {
-    if (method === 'GET') return await handleGet(env, resource, id);
+    if (method === 'GET') {
+      if (resource === 'authcheck') {
+        if (!isAuthorised(request, env)) return err('Unauthorised', 401);
+        return ok({ authorised: true });
+      }
+      return await handleGet(env, resource, id);
+    }
 
     if (!isAuthorised(request, env)) return err('Unauthorised', 401);
 
