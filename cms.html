@@ -29,6 +29,14 @@
     .toolbar button:hover{background:rgba(255,255,255,0.15);color:#fff;}
     .toolbar-sep{width:1px;height:22px;background:rgba(255,255,255,0.12);margin:0 4px;flex-shrink:0;}
     .toolbar-label{font-size:0.65rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.25);padding:0 4px;user-select:none;}
+    .link-popup-overlay{display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;}
+    .link-popup-overlay.open{display:flex;}
+    .link-popup-box{background:#1e1c19;border:1px solid rgba(255,255,255,0.1);width:100%;max-width:380px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:modalIn 0.2s ease;}
+    .link-popup-box h3{color:var(--cream);font-size:1.05rem;margin-bottom:20px;font-family:'Playfair Display',serif;}
+    .link-popup-box .form-row{margin-bottom:16px;}
+    .link-popup-box input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--cream);padding:9px 11px;font-family:'DM Sans',sans-serif;font-size:0.85rem;outline:none;}
+    .link-popup-box input:focus{border-color:var(--accent);}
+    .link-popup-box .form-actions{margin-top:4px;}
     /* Inline image insertion dialog */
     .img-insert-bar{display:none;gap:8px;align-items:center;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);padding:8px 12px;margin-bottom:6px;}
     .img-insert-bar.open{display:flex;flex-wrap:wrap;}
@@ -276,6 +284,7 @@
         <div class="toolbar-sep"></div>
         <span class="toolbar-label">Insert</span>
         <button onclick="toggleImgInsertBar()" title="Insert an image inline">🖼 Image</button>
+        <button onclick="openLinkPopup('art-body')" title="Insert a link">🔗 Link</button>
         <button onclick="insertText('art-body','<br>')">↵ br</button>
         <button onclick="insertText('art-body','\u00a0\u00a0\u00a0\u00a0')">⇥ em space</button>
         <button onclick="insertText('art-body','<hr>')" title="Horizontal rule / divider">― Rule</button>
@@ -301,6 +310,25 @@
       </div>
 
       <textarea id="art-body" placeholder="Write your article here. Use the toolbar above to add headings, formatting, images and more." style="min-height:300px;white-space:pre-wrap;font-family:'DM Sans',sans-serif;line-height:1.7;"></textarea>
+    </div>
+
+    <!-- Insert Link popup -->
+    <div class="link-popup-overlay" id="link-popup-overlay" onclick="if(event.target===this)closeLinkPopup()">
+      <div class="link-popup-box">
+        <h3>Insert link</h3>
+        <div class="form-row">
+          <label>Text to display</label>
+          <input type="text" id="link-popup-text" placeholder="(optional — leave blank to show the URL)" onkeydown="if(event.key==='Enter'){event.preventDefault();insertLinkFromPopup();}if(event.key==='Escape')closeLinkPopup();">
+        </div>
+        <div class="form-row">
+          <label>Link</label>
+          <input type="url" id="link-popup-url" placeholder="https://…" onkeydown="if(event.key==='Enter'){event.preventDefault();insertLinkFromPopup();}if(event.key==='Escape')closeLinkPopup();">
+        </div>
+        <div class="form-actions">
+          <button class="btn-xs btn-edit" onclick="closeLinkPopup()">Cancel</button>
+          <button class="btn-primary" onclick="insertLinkFromPopup()">Insert</button>
+        </div>
+      </div>
     </div>
     <div class="form-actions">
       <button class="btn-xs btn-edit" onclick="closeModal('article-modal')">Cancel</button>
@@ -843,6 +871,43 @@ function insertInlineImage(){
   document.getElementById('img-insert-bar').classList.remove('open');
   showToast('Image inserted ✓','success');
 }
+
+// ─── INSERT LINK POPUP ─────────────────────────────────────────────────
+let linkPopupTarget=null, linkPopupSelStart=0, linkPopupSelEnd=0;
+function openLinkPopup(targetId){
+  const ta=document.getElementById(targetId);
+  linkPopupTarget=targetId;
+  linkPopupSelStart=ta.selectionStart;
+  linkPopupSelEnd=ta.selectionEnd;
+  const selectedText=ta.value.substring(linkPopupSelStart,linkPopupSelEnd);
+  document.getElementById('link-popup-text').value=selectedText;
+  document.getElementById('link-popup-url').value='';
+  document.getElementById('link-popup-overlay').classList.add('open');
+  document.getElementById('link-popup-url').focus();
+}
+function closeLinkPopup(){
+  document.getElementById('link-popup-overlay').classList.remove('open');
+  linkPopupTarget=null;
+}
+function insertLinkFromPopup(){
+  if(!linkPopupTarget)return;
+  let url=document.getElementById('link-popup-url').value.trim();
+  if(!url){showToast('Please enter a URL');return;}
+  // Auto-prepend https:// for bare domains (e.g. "example.com")
+  if(!/^([a-z][a-z0-9+.-]*:|\/|#)/i.test(url)) url='https://'+url;
+  const text=document.getElementById('link-popup-text').value.trim()||url;
+  const tag=`<a href="${url}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+  const ta=document.getElementById(linkPopupTarget);
+  ta.value=ta.value.substring(0,linkPopupSelStart)+tag+ta.value.substring(linkPopupSelEnd);
+  ta.focus();
+  const caret=linkPopupSelStart+tag.length;
+  ta.selectionStart=ta.selectionEnd=caret;
+  closeLinkPopup();
+  showToast('Link inserted ✓','success');
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&document.getElementById('link-popup-overlay')?.classList.contains('open')) closeLinkPopup();
+});
 
 // ─── CLOUDINARY SETTINGS ──────────────────────────────────────────────
 function loadCloudinaryForm() {
