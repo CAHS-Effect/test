@@ -405,6 +405,16 @@ img { max-width: 100%; display: block; }
   background: var(--cream);
 }
 
+/* Links within article content */
+.article-body a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s;
+}
+.article-body a:hover { color: #1d4ed8; }
+.article-body a:visited { color: #1e40af; }
+
 /* Inline images */
 .article-body img {
   max-width: 100%; height: auto;
