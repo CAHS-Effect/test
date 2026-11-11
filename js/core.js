@@ -173,10 +173,7 @@ function readTimeLabel(article) {
   return (r.low === r.high ? r.low : r.low + '–' + r.high) + ' min read';
 }
 function emptyStateHTML(kind) {
-  const m = kind === 'news'
-    ? { icon: '🗞', title: 'The newsroom is still gathering its facts', text: 'Our reporters are chasing leads and checking sources. Fresh reporting will land here soon.' }
-    : { icon: '✒', title: 'The ink is still drying', text: 'Our writers are hard at work on new essays and stories. Check back soon for something worth sitting down with.' };
-  return `<div class="empty-state"><div class="empty-state-icon">${m.icon}</div><h3>${m.title}</h3><p>${m.text}</p></div>`;
+  return `<div class="empty-state"><h3>Not available</h3></div>`;
 }
 function getParam(k) { return new URLSearchParams(window.location.search).get(k); }
 function truncate(s,max=140) { if(!s||s.length<=max)return s||''; return s.slice(0,max).trim()+'…'; }
