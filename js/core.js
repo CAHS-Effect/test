@@ -150,6 +150,34 @@ function formatDate(s) {
   if (!s) return '';
   return new Date(s+'T00:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
 }
+// Reading time as a range, from word count at 250 wpm (fast) to 200 wpm (slow).
+// Whole minutes only, e.g. "2–3 min read". Falls back to the stored value if there is no body.
+function countWords(html) {
+  if (!html) return 0;
+  const spaced = html.replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ')
+                     .replace(/<\/?(p|div|h[1-6]|li|ul|ol|blockquote|br|hr|tr|td|th|figure|figcaption)\b[^>]*>/gi, ' ');
+  const text = new DOMParser().parseFromString(spaced, 'text/html').body.textContent || '';
+  const m = text.trim().match(/\S+/g);
+  return m ? m.length : 0;
+}
+function readTimeRange(html) {
+  const words = countWords(html);
+  if (!words) return null;
+  const low  = Math.max(1, Math.ceil(words / 250));
+  const high = Math.max(low, Math.ceil(words / 200));
+  return { low, high };
+}
+function readTimeLabel(article) {
+  const r = readTimeRange(article && article.body);
+  if (!r) return (article && article.readTime ? article.readTime : 1) + ' min read';
+  return (r.low === r.high ? r.low : r.low + '–' + r.high) + ' min read';
+}
+function emptyStateHTML(kind) {
+  const m = kind === 'news'
+    ? { icon: '🗞', title: 'The newsroom is still gathering its facts', text: 'Our reporters are chasing leads and checking sources. Fresh reporting will land here soon.' }
+    : { icon: '✒', title: 'The ink is still drying', text: 'Our writers are hard at work on new essays and stories. Check back soon for something worth sitting down with.' };
+  return `<div class="empty-state"><div class="empty-state-icon">${m.icon}</div><h3>${m.title}</h3><p>${m.text}</p></div>`;
+}
 function getParam(k) { return new URLSearchParams(window.location.search).get(k); }
 function truncate(s,max=140) { if(!s||s.length<=max)return s||''; return s.slice(0,max).trim()+'…'; }
 function getWriterName(id,data) { const w=data.writers.find(x=>x.id===id); return w?w.name:'Unknown'; }

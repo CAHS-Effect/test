@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Article — The CAHS & Effect</title>
-  <link rel="stylesheet" href="css/style.v2.css">
+  <link rel="stylesheet" href="css/style.v3.css">
   <style>
     .article-progress{position:fixed;top:var(--nav-height);left:0;right:0;z-index:900;height:3px;}
     .article-progress-bar{height:100%;background:var(--accent);width:0%;transition:width 0.1s linear;}
@@ -55,7 +55,7 @@
     const issueInfo=article.issueId?data.issues.find(i=>i.id===article.issueId):null;
     document.title=`${article.title} — The CAHS & Effect`;
     const heroSrc=article.heroImage||article.coverImage;
-    const heroImg=heroSrc?`<div class="article-single-hero"><img src="${heroSrc}" alt="${article.title}"></div>`:'';
+    const heroImg=heroSrc?`<div class="article-single-hero" style="--hero-bg:url('${String(heroSrc).replace(/'/g,'%27')}')"><img src="${heroSrc}" alt="${article.title}"></div>`:'';
     document.getElementById('article-content').innerHTML=`
       <article class="article-single">
         <div class="container-narrow">
@@ -66,8 +66,8 @@
             <div class="article-single-meta">
               <span>By <a href="writers.html#writer-${article.author}" style="color:var(--accent)">${authorName}</a></span>
               <span class="dot"></span><span>${formatDate(article.date)}</span>
-              <span class="dot"></span><span>${article.readTime} min read</span>
-              ${issueInfo?`<span class="dot"></span><span>${issueInfo.title}</span>`:''}
+              <span class="dot"></span><span>${readTimeLabel(article)}</span>
+              ${issueInfo?`<span class="dot"></span><a href="news.html#issue-${issueInfo.id}" class="issue-link" title="See all articles in this issue">${issueInfo.title}</a>`:''}
             </div>
           </header>
         </div>
