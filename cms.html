@@ -304,6 +304,9 @@
         <button type="button" data-cmd="justifyCenter" onclick="execFmt('justifyCenter')" title="Center">↔</button>
         <button type="button" data-cmd="justifyRight" onclick="execFmt('justifyRight')" title="Align right">⇥</button>
         <div class="toolbar-sep"></div>
+        <button type="button" onclick="indentBlocks(-1)" title="Decrease indent (Shift+Tab)">Outdent</button>
+        <button type="button" onclick="indentBlocks(1)" title="Increase indent (Tab at the start of a line)">Indent</button>
+        <div class="toolbar-sep"></div>
         <button type="button" onclick="openLinkPopup()" title="Insert link (Ctrl+K)">🔗 Link</button>
         <button type="button" onclick="toggleImgInsertBar()" title="Insert an image">🖼 Image</button>
         <button type="button" onclick="execFmt('insertHorizontalRule')" title="Divider line">― Rule</button>
@@ -953,6 +956,31 @@ function fixNestedBlocks(){
     if([...p.children].some(c=>/^(UL|OL|H1|H2|H3|BLOCKQUOTE|P|HR)$/.test(c.tagName))) unwrapEl(p);
   });
 }
+// ── indent / outdent ──
+// Paragraphs, headings and quotes get a left margin (2em per level, max 6). Lists nest instead.
+function indentBlocks(delta){
+  if(sourceMode){ showToast('Switch back to the visual editor to indent'); return; }
+  focusEditor();
+  const ed=editorEl(), sel=getSelection();
+  if(!sel.rangeCount) return;
+  const r=sel.getRangeAt(0);
+  let n=sel.anchorNode;
+  while(n && n!==ed && !(n.nodeType===1 && n.tagName==='LI')) n=n.parentNode;
+  if(n && n!==ed){                                   // inside a list → nest / un-nest
+    const off=caretOffsetInBlock();
+    document.execCommand(delta>0?'indent':'outdent');
+    fixNestedBlocks(); placeCaretInBlock(off); afterEdit();
+    return;
+  }
+  const blocks=[...ed.children].filter(c=>/^(P|H1|H2|H3|BLOCKQUOTE|UL|OL)$/.test(c.tagName) && r.intersectsNode(c));
+  if(!blocks.length){ if(delta>0) insertHtmlAtCursor('\u2003'); return; }   // loose text: insert a tab-width space
+  blocks.forEach(b=>{
+    const cur=parseFloat(b.style.marginLeft)||0, next=Math.max(0,Math.min(12,cur+2*delta));
+    if(next) b.style.marginLeft=next+'em';
+    else { b.style.removeProperty('margin-left'); if(!b.getAttribute('style')) b.removeAttribute('style'); }
+  });
+  articleDirty=true; afterEdit();
+}
 function execFmt(cmd){
   if(sourceMode){ showToast('Switch back to the visual editor to format text'); return; }
   focusEditor();
@@ -1026,9 +1054,14 @@ function normalizeTags(root){
   root.querySelectorAll('span,font').forEach(unwrapEl);
   root.querySelectorAll('[style]').forEach(el=>{
     if(el.tagName==='IMG') return;
-    const ta=el.style.textAlign;
+    const ta=el.style.textAlign, ml=el.style.marginLeft;
     el.removeAttribute('style');
-    if(ta && /^(P|H1|H2|H3|BLOCKQUOTE|LI|DIV)$/.test(el.tagName)) el.setAttribute('style','text-align:'+ta+';');
+    if(/^(P|H1|H2|H3|BLOCKQUOTE|LI|DIV|UL|OL)$/.test(el.tagName)){
+      let st='';
+      if(ta) st+='text-align:'+ta+';';
+      if(/^[\d.]+em$/.test(ml)) st+='margin-left:'+ml+';';
+      if(st) el.setAttribute('style',st);
+    }
   });
   // <p> may not contain block elements (browsers can leave p > ul behind)
   [...root.querySelectorAll('p')].reverse().forEach(p=>{
@@ -1112,8 +1145,11 @@ function sanWalk(src,dst){
         el.setAttribute('style', css||'display:block;max-width:100%;margin:1.5em auto;');
       }
       else if(/^(p|h1|h2|h3|blockquote|li)$/.test(keep)){
-        const ta=st.textAlign;
-        if(/^(left|center|right|justify)$/.test(ta||'')) el.setAttribute('style','text-align:'+ta+';');
+        const ta=st.textAlign, ml=st.marginLeft;
+        let css=''; 
+        if(/^(left|center|right|justify)$/.test(ta||'')) css+='text-align:'+ta+';';
+        if(/^[\d.]+em$/.test(ml||'')) css+='margin-left:'+ml+';';
+        if(css) el.setAttribute('style',css);
         if(keep==='p' && n.classList && n.classList.contains('article-title')) el.setAttribute('class','article-title');
       }
       dst.appendChild(el);
@@ -1245,6 +1281,16 @@ async function importDocx(e){
   ed.addEventListener('scroll',()=>{ if(selectedImg) positionImgTools(); });
   ed.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); openLinkPopup(); }
+    if((e.ctrlKey||e.metaKey)&&e.key===']'){ e.preventDefault(); indentBlocks(1); }
+    if((e.ctrlKey||e.metaKey)&&e.key==='['){ e.preventDefault(); indentBlocks(-1); }
+    if(e.key==='Tab'){
+      e.preventDefault();
+      if(e.shiftKey){ indentBlocks(-1); return; }
+      const sel=getSelection();
+      const inLi=sel.anchorNode && (sel.anchorNode.nodeType===1?sel.anchorNode:sel.anchorNode.parentElement).closest('li');
+      if(inLi || !sel.isCollapsed || caretOffsetInBlock()===0) indentBlocks(1);   // start of a line / list / selection
+      else insertHtmlAtCursor('\u2003');                                         // mid-line: tab-width space
+    }
     if(e.key==='Enter'){   // a new line after a Title should be a normal paragraph, not another Title
       const b=liveBlock();
       if(b && b.classList.contains('article-title')) setTimeout(()=>{
