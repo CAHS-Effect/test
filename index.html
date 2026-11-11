@@ -7,12 +7,31 @@
   <meta name="description" content="The CAHS &amp; Effect publishes creative writing and journalism by writers who care about words.">
   <link rel="stylesheet" href="css/style.v3.css">
   <style>
-    /* Right-hand hero panel photo (set here, with its own filename, so browsers never reuse an old cached copy) */
+    /* Hero photos. Set here (with their own filenames) so browsers never reuse an old cached copy. */
+    /* Right panel: photo behind the stats card */
     .hero::before {
       background:
         linear-gradient(rgba(26,26,26,0.45), rgba(26,26,26,0.45)),
         url('images/hero-board.jpg') center / cover no-repeat,
         var(--ink);
+    }
+    /* Left panel: full-height photo, slanted edge mirrors the right panel */
+    .hero-left-photo {
+      position: absolute; top: 0; left: 0; width: 45%; height: 100%;
+      background:
+        linear-gradient(to top, rgba(26,26,26,0.6), rgba(26,26,26,0) 45%),
+        url('images/hero-school.jpg') center / cover no-repeat,
+        var(--ink);
+      clip-path: polygon(0 0, 88% 0, 100% 100%, 0 100%);
+    }
+    .hero-content { align-self: stretch; }
+    .hero-text { align-self: end; padding-bottom: 56px; }
+    .hero-visual { align-self: center; }
+    .hero-text .btn-secondary { color: #fff; border-color: #fff; }
+    .hero-text .btn-secondary:hover { background: #fff; color: var(--ink); }
+    @media (max-width: 900px) {
+      .hero-left-photo { width: 100%; clip-path: none;
+        background: linear-gradient(to top, rgba(26,26,26,0.75), rgba(26,26,26,0.1) 60%), url('images/hero-school.jpg') center / cover no-repeat; }
     }
   </style>
 </head>
@@ -39,13 +58,13 @@
 
 <div class="page">
   <section class="hero">
+    <div class="hero-left-photo" role="img" aria-label="Columbus Alternative High School building"></div>
     <div class="hero-content">
       <div class="hero-text">
         <!-- Reserved copy: hidden for now, remove the `hidden` attributes to bring it back later -->
         <div class="hero-kicker fade-up" id="hero-kicker" hidden>Words with weight</div>
         <h1 class="fade-up delay-1" id="hero-title" hidden>We write<br><em>stories that</em><br>stay with you.</h1>
         <p class="hero-desc fade-up delay-2" id="hero-desc" hidden>The CAHS & Effect is an independent publication dedicated to journalism and creative writing that takes its time. No noise. No churn. Just writing that matters.</p>
-        <div class="hero-cover fade-up delay-1"><img src="images/hero-school.jpg" alt="Columbus Alternative High School building"></div>
         <div style="display:flex;gap:16px;flex-wrap:wrap;" class="fade-up delay-3">
           <a href="creative.html" class="btn-primary">Read Creative <span class="arrow">→</span></a>
           <a href="news.html" class="btn-secondary">Latest News</a>
