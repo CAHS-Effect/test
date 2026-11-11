@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>News — The CAHS & Effect</title>
-  <link rel="stylesheet" href="css/style.v2.css">
+  <link rel="stylesheet" href="css/style.v3.css">
 </head>
 <body>
 <nav id="navbar"><div class="nav-inner">
@@ -19,7 +19,7 @@
   <section class="section"><div class="container">
     <div id="news-unassigned"></div>
     <div id="news-issues"></div>
-    <div id="news-empty" style="display:none;text-align:center;padding:80px 0;"><p style="color:var(--mid);font-size:1.1rem;">No news articles published yet.</p></div>
+    <div id="news-empty" style="display:none;"></div>
   </div></section>
 </div>
 <footer><div class="container">
@@ -39,7 +39,7 @@
   Store.fetchPublic().then(data => {
     hidePageLoader();
     const newsAll=data.articles.filter(a=>a.type==='news'&&a.status==='published').sort((a,b)=>new Date(b.date)-new Date(a.date));
-    if (!newsAll.length) { document.getElementById('news-empty').style.display='block'; return; }
+    if (!newsAll.length) { const el=document.getElementById('news-empty'); el.innerHTML=emptyStateHTML('news'); el.style.display='block'; return; }
     const issues=[...data.issues].sort((a,b)=>new Date(b.date)-new Date(a.date));
     const unassigned=newsAll.filter(a=>!a.issueId||!data.issues.find(i=>i.id===a.issueId));
     if (unassigned.length) {
@@ -48,9 +48,14 @@
     document.getElementById('news-issues').innerHTML=issues.map((issue,idx)=>{
       const arts=newsAll.filter(a=>a.issueId===issue.id);
       if (!arts.length) return '';
-      return `<div class="issue-block reveal"><div class="issue-header"><div class="issue-number">${String(idx+1).padStart(2,'0')}</div><div class="issue-info"><h3>${issue.title}</h3><span>${formatDate(issue.date)}${issue.description?' — '+issue.description:''}</span></div></div><div class="articles-grid">${arts.map(a=>buildArticleCard(a,data)).join('')}</div></div>`;
+      return `<div class="issue-block reveal" id="issue-${issue.id}"><div class="issue-header"><div class="issue-number">${String(idx+1).padStart(2,'0')}</div><div class="issue-info"><h3>${issue.title}</h3><span>${formatDate(issue.date)}${issue.description?' — '+issue.description:''}</span></div></div><div class="articles-grid">${arts.map(a=>buildArticleCard(a,data)).join('')}</div></div>`;
     }).join('');
     setupReveal();
+    // Jump to a specific issue when arriving from an article (news.html#issue-<id>)
+    if (location.hash.startsWith('#issue-')) {
+      const target=document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (target) setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'start'}),150);
+    }
   }).catch(err=>{ hidePageLoader(); console.error(err); });
 </script>
 </body></html>

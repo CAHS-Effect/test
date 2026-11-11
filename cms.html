@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — The CAHS &amp; Effect CMS</title>
-  <link rel="stylesheet" href="css/style.v2.css">
+  <link rel="stylesheet" href="css/style.v3.css">
   <style>
     body{background:var(--ink);}
     .img-preview{margin-top:10px;max-height:140px;max-width:100%;border:1px solid rgba(255,255,255,0.1);object-fit:cover;display:none;}
@@ -29,6 +29,19 @@
     .toolbar button:hover{background:rgba(255,255,255,0.15);color:#fff;}
     .toolbar-sep{width:1px;height:22px;background:rgba(255,255,255,0.12);margin:0 4px;flex-shrink:0;}
     .toolbar-label{font-size:0.65rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.25);padding:0 4px;user-select:none;}
+    .editor-toolbar select{width:auto;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);padding:5px 8px;font-size:0.75rem;font-family:'DM Sans',sans-serif;cursor:pointer;}
+    .editor-toolbar select option{color:#111;}
+    .editor-toolbar button.active{background:rgba(200,57,43,0.35);color:#fff;border-color:rgba(200,57,43,0.6);}
+    .rich-editor{background:var(--warm-white);color:var(--ink);border:1px solid rgba(255,255,255,0.1);padding:36px 44px;min-height:380px;max-height:62vh;overflow-y:auto;outline:none;position:relative;}
+    .rich-editor:focus{border-color:var(--accent);}
+    .rich-editor.is-empty::before{content:attr(data-placeholder);position:absolute;top:36px;left:44px;right:44px;color:var(--mid);pointer-events:none;font-size:1rem;line-height:1.6;font-family:'DM Sans',sans-serif;white-space:normal;}
+    .rich-editor img{cursor:pointer;}
+    .rich-editor img.img-selected{outline:3px solid var(--accent);outline-offset:2px;}
+    .editor-meta{display:flex;justify-content:flex-end;font-size:0.75rem;color:rgba(255,255,255,0.45);margin-top:6px;}
+    .img-tools{display:none;position:fixed;z-index:9400;background:#1e1c19;border:1px solid rgba(255,255,255,0.2);padding:4px;gap:2px;box-shadow:0 8px 24px rgba(0,0,0,0.5);}
+    .img-tools.show{display:flex;}
+    .img-tools button{background:none;border:none;color:#fff;padding:5px 9px;cursor:pointer;font-size:0.85rem;font-family:'DM Sans',sans-serif;}
+    .img-tools button:hover{background:rgba(255,255,255,0.15);}
     .link-popup-overlay{display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;}
     .link-popup-overlay.open{display:flex;}
     .link-popup-box{background:#1e1c19;border:1px solid rgba(255,255,255,0.1);width:100%;max-width:380px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:modalIn 0.2s ease;}
@@ -223,7 +236,7 @@
     </div>
     <div class="form-grid-2">
       <div class="form-row"><label>Publication Date</label><input type="date" id="art-date"></div>
-      <div class="form-row"><label>Read Time (minutes)</label><input type="number" id="art-readtime" value="5" min="1" max="60"></div>
+      <div class="form-row"><label>Read Time (automatic)</label><input type="text" id="art-readtime" value="" readonly tabindex="-1" style="opacity:0.75;cursor:default;" title="Calculated from the article length at 200–250 words per minute"></div>
     </div>
     <div class="form-row">
       <label>Cover Image — thumbnail (optional)</label>
@@ -268,26 +281,40 @@
       <div style="font-size:0.75rem;color:rgba(255,255,255,0.45);margin-top:6px;">Used for the full-width image at the top of the article. Leave blank to reuse the cover image.</div>
     </div>
     <div class="form-row">
-      <label>Body (HTML supported)</label>
-      <div class="toolbar">
-        <span class="toolbar-label">Heading</span>
-        <button onclick="wrapText('art-body','<p class=&quot;article-title&quot;>','</p>')" title="Large display title">Title</button>
-        <button onclick="wrapText('art-body','<h1>','</h1>')">H1</button>
-        <button onclick="wrapText('art-body','<h2>','</h2>')">H2</button>
-        <button onclick="wrapText('art-body','<h3>','</h3>')">H3</button>
+      <label>Body</label>
+      <div class="toolbar editor-toolbar" id="editor-toolbar" onmousedown="if(event.target.tagName!=='SELECT')event.preventDefault()">
+        <select id="fmt-block" onchange="fmtBlock(this.value)" title="Paragraph style" onmousedown="event.stopPropagation()">
+          <option value="p">Paragraph</option>
+          <option value="title">Title</option>
+          <option value="h1">Heading 1</option>
+          <option value="h2">Heading 2</option>
+          <option value="h3">Heading 3</option>
+          <option value="blockquote">Quote</option>
+        </select>
         <div class="toolbar-sep"></div>
-        <span class="toolbar-label">Format</span>
-        <button onclick="wrapText('art-body','<p>','</p>')">¶ Para</button>
-        <button onclick="wrapText('art-body','<strong>','</strong>')"><b>Bold</b></button>
-        <button onclick="wrapText('art-body','<em>','</em>')"><i>Italic</i></button>
-        <button onclick="wrapText('art-body','<blockquote>','</blockquote>')">" Quote</button>
+        <button type="button" data-cmd="bold" onclick="execFmt('bold')" title="Bold (Ctrl+B)"><b>B</b></button>
+        <button type="button" data-cmd="italic" onclick="execFmt('italic')" title="Italic (Ctrl+I)"><i>I</i></button>
+        <button type="button" data-cmd="underline" onclick="execFmt('underline')" title="Underline (Ctrl+U)"><u>U</u></button>
+        <button type="button" data-cmd="strikeThrough" onclick="execFmt('strikeThrough')" title="Strikethrough"><s>S</s></button>
         <div class="toolbar-sep"></div>
-        <span class="toolbar-label">Insert</span>
-        <button onclick="toggleImgInsertBar()" title="Insert an image inline">🖼 Image</button>
-        <button onclick="openLinkPopup('art-body')" title="Insert a link">🔗 Link</button>
-        <button onclick="insertText('art-body','<br>')">↵ br</button>
-        <button onclick="insertText('art-body','\u00a0\u00a0\u00a0\u00a0')">⇥ em space</button>
-        <button onclick="insertText('art-body','<hr>')" title="Horizontal rule / divider">― Rule</button>
+        <button type="button" data-cmd="insertUnorderedList" onclick="execFmt('insertUnorderedList')" title="Bulleted list">• List</button>
+        <button type="button" data-cmd="insertOrderedList" onclick="execFmt('insertOrderedList')" title="Numbered list">1. List</button>
+        <div class="toolbar-sep"></div>
+        <button type="button" data-cmd="justifyLeft" onclick="execFmt('justifyLeft')" title="Align left">⇤</button>
+        <button type="button" data-cmd="justifyCenter" onclick="execFmt('justifyCenter')" title="Center">↔</button>
+        <button type="button" data-cmd="justifyRight" onclick="execFmt('justifyRight')" title="Align right">⇥</button>
+        <div class="toolbar-sep"></div>
+        <button type="button" onclick="openLinkPopup()" title="Insert link (Ctrl+K)">🔗 Link</button>
+        <button type="button" onclick="toggleImgInsertBar()" title="Insert an image">🖼 Image</button>
+        <button type="button" onclick="execFmt('insertHorizontalRule')" title="Divider line">― Rule</button>
+        <button type="button" onclick="execFmt('removeFormat')" title="Clear formatting on the selection">Tx Clear</button>
+        <div class="toolbar-sep"></div>
+        <button type="button" onclick="execFmt('undo')" title="Undo (Ctrl+Z)">↶</button>
+        <button type="button" onclick="execFmt('redo')" title="Redo (Ctrl+Y)">↷</button>
+        <div class="toolbar-sep"></div>
+        <button type="button" onclick="document.getElementById('docx-file-input').click()" title="Import a Word document (.docx) — text, formatting and images">📄 Import .docx</button>
+        <button type="button" id="src-toggle-btn" onclick="toggleSourceView()" title="Edit the raw HTML">&lt;/&gt; HTML</button>
+        <input type="file" id="docx-file-input" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none" onchange="importDocx(event)">
       </div>
 
       <!-- Inline image insertion bar (shown when 🖼 Image is clicked) -->
@@ -309,7 +336,17 @@
         <button onclick="toggleImgInsertBar()" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:1rem;padding:2px 6px;">✕</button>
       </div>
 
-      <textarea id="art-body" placeholder="Write your article here. Use the toolbar above to add headings, formatting, images and more." style="min-height:300px;white-space:pre-wrap;font-family:'DM Sans',sans-serif;line-height:1.7;"></textarea>
+      <div id="art-editor" class="article-body rich-editor" contenteditable="true" spellcheck="true" data-placeholder="Start writing, or use 📄 Import .docx to bring in a Word document. Paste from Word or Google Docs keeps your formatting."></div>
+      <textarea id="art-body" spellcheck="false" style="display:none;min-height:360px;font-family:'DM Mono',Menlo,Consolas,monospace;font-size:0.82rem;line-height:1.6;white-space:pre-wrap;" placeholder="Raw HTML"></textarea>
+      <div class="editor-meta"><span id="editor-wordcount">0 words</span></div>
+      <div class="img-tools" id="img-tools">
+        <button type="button" onclick="setImgAlign('left')" title="Float left">◧</button>
+        <button type="button" onclick="setImgAlign('center')" title="Centered">▣</button>
+        <button type="button" onclick="setImgAlign('block')" title="Full width">▭</button>
+        <button type="button" onclick="setImgAlign('right')" title="Float right">◨</button>
+        <button type="button" onclick="setImgAlt()" title="Edit alt text">Alt</button>
+        <button type="button" onclick="removeSelectedImg()" title="Delete image">🗑</button>
+      </div>
     </div>
 
     <!-- Insert Link popup -->
@@ -512,7 +549,16 @@ function switchSection(name,link){
 function toggleSidebar(){ document.getElementById('cms-sidebar').classList.toggle('mobile-open'); }
 
 // ─── MODALS ───────────────────────────────────────────────────────────
-function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function closeModal(id){
+  if(id==='article-modal'&&articleDirty&&!confirm('Close the editor? Your unsaved changes will be lost.'))return;
+  document.getElementById(id).classList.remove('open');
+}
+let articleDirty=false;
+document.getElementById('article-modal').addEventListener('input',()=>{articleDirty=true;});
+document.getElementById('article-modal').addEventListener('change',()=>{articleDirty=true;});
+window.addEventListener('beforeunload',e=>{
+  if(articleDirty&&document.getElementById('article-modal').classList.contains('open')){e.preventDefault();e.returnValue='';}
+});
 
 function openArticleModal(id){
   const data=Store.get();
@@ -529,20 +575,19 @@ function openArticleModal(id){
     document.getElementById('art-author').value=art.author||'';
     document.getElementById('art-issue').value=art.issueId||'';
     document.getElementById('art-date').value=art.date||'';
-    document.getElementById('art-readtime').value=art.readTime||5;
-    document.getElementById('art-body').value=decodeBodyWhitespace(art.body||'');
+    setBodyHtml(art.body||'');
     document.getElementById('art-file-input').value='';
     document.getElementById('arth-file-input').value='';
     loadImageIntoModal('art',art.coverImage||'');
     loadImageIntoModal('arth',art.heroImage||'');
   } else {
     document.getElementById('article-modal-title').textContent='New Article';
-    ['art-id','art-title','art-excerpt','art-body'].forEach(i=>document.getElementById(i).value='');
+    ['art-id','art-title','art-excerpt'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('art-type').value='creative';
     document.getElementById('art-status').value='draft';
     document.getElementById('art-issue').value='';
     document.getElementById('art-date').value=new Date().toISOString().split('T')[0];
-    document.getElementById('art-readtime').value=5;
+    setBodyHtml('');
     document.getElementById('art-file-input').value='';
     document.getElementById('arth-file-input').value='';
     clearImage('art');
@@ -553,6 +598,7 @@ function openArticleModal(id){
       document.getElementById(p+'-url-panel').classList.remove('active');
     });
   }
+  articleDirty=false;
   document.getElementById('article-modal').classList.add('open');
 }
 
@@ -560,6 +606,8 @@ async function saveArticle(){
   const title=document.getElementById('art-title').value.trim();
   if(!title){showToast('Title is required');return;}
   const id=document.getElementById('art-id').value;
+  if(!(await uploadEmbeddedImages())) return;
+  const bodyHtml=getBodyHtml();
   const article={
     id: id||('a'+Date.now()),
     type:document.getElementById('art-type').value,
@@ -569,11 +617,12 @@ async function saveArticle(){
     author:document.getElementById('art-author').value,
     issueId:document.getElementById('art-issue').value,
     date:document.getElementById('art-date').value,
-    readTime:parseInt(document.getElementById('art-readtime').value)||5,
+    readTime:(readTimeRange(bodyHtml)||{low:1}).low,
     coverImage:document.getElementById('art-image-data').value,
     heroImage:document.getElementById('arth-image-data').value,
-    body:encodeBodyWhitespace(document.getElementById('art-body').value)
+    body:bodyHtml
   };
+  articleDirty=false;
   closeModal('article-modal');
   setSaving('Saving article…',true);
   try {
@@ -808,8 +857,429 @@ function loadImageIntoModal(prefix,src){
   if(IMG_URL_FIELD[prefix])document.getElementById(IMG_URL_FIELD[prefix]).value=src;
   setImageData(prefix,src);
 }
-function wrapText(id,b,a){const ta=document.getElementById(id);const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.substring(s,e);const rep=b+(sel||'text')+a;ta.value=ta.value.substring(0,s)+rep+ta.value.substring(e);ta.focus();ta.selectionStart=s+b.length;ta.selectionEnd=s+b.length+(sel||'text').length;}
-function insertText(id,text){const ta=document.getElementById(id);const s=ta.selectionStart;ta.value=ta.value.substring(0,s)+text+ta.value.substring(ta.selectionEnd);ta.focus();ta.selectionStart=ta.selectionEnd=s+text.length;}
+// ─── RICH TEXT EDITOR (Word / Google Docs style) ──────────────────────
+const editorEl = () => document.getElementById('art-editor');
+let lastRange = null, sourceMode = false, selectedImg = null;
+
+function escHtml(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(t){ return escHtml(t).replace(/"/g,'&quot;'); }
+
+function imgStyle(align){
+  if(align==='left')   return 'float:left;margin:0 1.5em 1em 0;max-width:45%;';
+  if(align==='right')  return 'float:right;margin:0 0 1em 1.5em;max-width:45%;';
+  if(align==='center') return 'display:block;margin:1.5em auto;max-width:80%;';
+  return 'display:block;width:100%;margin:1.5em 0;';
+}
+
+// ── selection tracking (toolbar clicks/dialogs steal focus, so remember it) ──
+// Put focus (and the caret) back in the editor. If the editor already has focus the live
+// selection is correct; otherwise (a dropdown or dialog took focus) restore the remembered range.
+function focusEditor(){
+  const ed=editorEl();
+  if(document.activeElement===ed) return;
+  ed.focus({preventScroll:true});
+  if(lastRange){ const sel=getSelection(); sel.removeAllRanges(); sel.addRange(lastRange); }
+}
+document.addEventListener('selectionchange',()=>{
+  const ed=editorEl(), sel=getSelection();
+  if(!ed||sourceMode||!sel.rangeCount) return;
+  const r=sel.getRangeAt(0);
+  if(ed.contains(r.commonAncestorContainer)){ lastRange=r.cloneRange(); refreshToolbarState(); }
+});
+
+function liveBlock(){
+  const ed=editorEl(), sel=getSelection();
+  let n = (sel.rangeCount && ed.contains(sel.anchorNode)) ? sel.anchorNode : (lastRange?lastRange.startContainer:null);
+  while(n && n!==ed){
+    if(n.nodeType===1 && /^(P|H1|H2|H3|BLOCKQUOTE|LI|DIV)$/.test(n.tagName)) return n;
+    n=n.parentNode;
+  }
+  return null;
+}
+function refreshToolbarState(){
+  if(sourceMode) return;
+  document.querySelectorAll('#editor-toolbar [data-cmd]').forEach(b=>{
+    let on=false; try{ on=document.queryCommandState(b.dataset.cmd); }catch(e){}
+    b.classList.toggle('active',!!on);
+  });
+  const blk=liveBlock(), sel=document.getElementById('fmt-block');
+  let v='p';
+  if(blk){
+    if(blk.tagName==='P' && blk.classList.contains('article-title')) v='title';
+    else if(/^H[123]$/.test(blk.tagName)) v=blk.tagName.toLowerCase();
+    else if(blk.parentElement && blk.parentElement.tagName==='BLOCKQUOTE' || blk.tagName==='BLOCKQUOTE') v='blockquote';
+  }
+  sel.value=v;
+}
+
+function afterEdit(){ updateStats(); refreshToolbarState(); }
+function ensureParagraph(){
+  const ed=editorEl();
+  if(ed.innerHTML===''||ed.innerHTML==='<br>'){
+    ed.innerHTML='<p><br></p>';
+    const r=document.createRange(); r.setStart(ed.firstChild,0); r.collapse(true);
+    const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r);
+  }
+}
+function updateEmptyClass(){
+  const ed=editorEl();
+  const empty=!ed.textContent.trim() && !ed.querySelector('img,hr,ul,ol') && ed.children.length<=1;
+  ed.classList.toggle('is-empty',empty);
+}
+
+// Browsers can reset the caret to the start of the line after list/heading commands.
+// Remember the caret as an offset inside its block and put it back afterwards.
+function caretOffsetInBlock(){
+  const sel=getSelection();
+  if(!sel.rangeCount||!sel.isCollapsed) return null;
+  const blk=liveBlock(); if(!blk) return null;
+  const r=document.createRange(); r.selectNodeContents(blk); r.setEnd(sel.anchorNode,sel.anchorOffset);
+  return r.toString().length;
+}
+function placeCaretInBlock(offset){
+  if(offset==null) return;
+  const blk=liveBlock(); if(!blk) return;
+  const w=document.createTreeWalker(blk,NodeFilter.SHOW_TEXT); let n, left=offset, last=null;
+  while((n=w.nextNode())){
+    last=n;
+    if(left<=n.nodeValue.length){ const r=document.createRange(); r.setStart(n,left); r.collapse(true); const s=getSelection(); s.removeAllRanges(); s.addRange(r); return; }
+    left-=n.nodeValue.length;
+  }
+  if(last){ const r=document.createRange(); r.setStart(last,last.nodeValue.length); r.collapse(true); const s=getSelection(); s.removeAllRanges(); s.addRange(r); }
+}
+function fixNestedBlocks(){
+  const ed=editorEl();
+  [...ed.querySelectorAll('p')].reverse().forEach(p=>{
+    if([...p.children].some(c=>/^(UL|OL|H1|H2|H3|BLOCKQUOTE|P|HR)$/.test(c.tagName))) unwrapEl(p);
+  });
+}
+function execFmt(cmd){
+  if(sourceMode){ showToast('Switch back to the visual editor to format text'); return; }
+  focusEditor();
+  const off=caretOffsetInBlock();
+  document.execCommand(cmd,false,null);
+  fixNestedBlocks();
+  if(/List$/.test(cmd)) placeCaretInBlock(off);
+  afterEdit();
+}
+function unwrapEl(q){ while(q.firstChild) q.parentNode.insertBefore(q.firstChild,q); q.remove(); }
+function fmtBlock(v){
+  if(sourceMode){ showToast('Switch back to the visual editor to format text'); return; }
+  const ed=editorEl(); focusEditor();
+  const tag = v==='title' ? 'p' : v;
+  const off=caretOffsetInBlock();
+  document.execCommand('formatBlock',false,'<'+tag+'>');
+  fixNestedBlocks();
+  placeCaretInBlock(off);
+  const blk=liveBlock();
+  if(blk){
+    if(v!=='blockquote'){
+      let q=blk.parentElement;
+      while(q && q!==ed){ if(q.tagName==='BLOCKQUOTE'){ unwrapEl(q); break; } q=q.parentElement; }
+    }
+    if(v==='title') blk.classList.add('article-title'); else blk.classList.remove('article-title');
+    if(!blk.getAttribute('class')) blk.removeAttribute('class');
+  }
+  afterEdit();
+}
+
+function insertHtmlAtCursor(html){
+  if(sourceMode){
+    const ta=document.getElementById('art-body'), s=ta.selectionStart;
+    ta.value=ta.value.slice(0,s)+html+ta.value.slice(ta.selectionEnd);
+    ta.focus(); ta.selectionStart=ta.selectionEnd=s+html.length; updateStats();
+    return;
+  }
+  const ed=editorEl(); focusEditor();
+  const sel=getSelection();
+  if(!sel.rangeCount || !ed.contains(sel.anchorNode)){
+    const r=document.createRange(); r.selectNodeContents(ed); r.collapse(false);
+    sel.removeAllRanges(); sel.addRange(r);
+  }
+  document.execCommand('insertHTML',false,html);
+  articleDirty=true;
+  afterEdit();
+}
+
+// ── read time + word count ──
+function updateStats(){
+  updateEmptyClass();
+  const html=getBodyHtml(), w=countWords(html), r=readTimeRange(html);
+  const label = r ? (r.low===r.high ? r.low : r.low+'–'+r.high)+' min read' : '—';
+  document.getElementById('editor-wordcount').textContent=`${w.toLocaleString()} words · ${label}`;
+  document.getElementById('art-readtime').value = r ? label : '';
+}
+
+// ── getting / setting the body ──
+function renameTag(el,newTag){
+  const n=document.createElement(newTag);
+  [...el.attributes].forEach(a=>n.setAttribute(a.name,a.value));
+  while(el.firstChild) n.appendChild(el.firstChild);
+  el.replaceWith(n);
+}
+function normalizeTags(root){
+  root.querySelectorAll('b').forEach(e=>renameTag(e,'strong'));
+  root.querySelectorAll('i').forEach(e=>renameTag(e,'em'));
+  root.querySelectorAll('strike,del').forEach(e=>renameTag(e,'s'));
+  root.querySelectorAll(':scope > div').forEach(e=>renameTag(e,'p'));
+  // browsers add style-carrying spans/fonts when inserting content; they are never needed
+  root.querySelectorAll('span,font').forEach(unwrapEl);
+  root.querySelectorAll('[style]').forEach(el=>{
+    if(el.tagName==='IMG') return;
+    const ta=el.style.textAlign;
+    el.removeAttribute('style');
+    if(ta && /^(P|H1|H2|H3|BLOCKQUOTE|LI|DIV)$/.test(el.tagName)) el.setAttribute('style','text-align:'+ta+';');
+  });
+  // <p> may not contain block elements (browsers can leave p > ul behind)
+  [...root.querySelectorAll('p')].reverse().forEach(p=>{
+    if([...p.children].some(c=>/^(UL|OL|H1|H2|H3|BLOCKQUOTE|P|HR)$/.test(c.tagName))) unwrapEl(p);
+  });
+  root.querySelectorAll('p:empty').forEach(p=>{ if(!p.nextSibling) p.remove(); });
+}
+function getBodyHtml(){
+  if(sourceMode) return document.getElementById('art-body').value.trim();
+  const clone=editorEl().cloneNode(true);
+  clone.querySelectorAll('img.img-selected').forEach(i=>{ i.classList.remove('img-selected'); if(!i.getAttribute('class')) i.removeAttribute('class'); });
+  normalizeTags(clone);
+  return clone.innerHTML.replace(/(<p>(<br>)?<\/p>\s*)+$/i,'').trim();
+}
+function setBodyHtml(html){
+  const ed=editorEl(), ta=document.getElementById('art-body');
+  sourceMode=false; ta.style.display='none'; ed.style.display='';
+  document.getElementById('src-toggle-btn').classList.remove('active');
+  ed.innerHTML=html||'<p><br></p>'; ta.value=html||'';
+  lastRange=null; deselectImg(); updateStats();
+}
+function toggleSourceView(){
+  const ed=editorEl(), ta=document.getElementById('art-body'), btn=document.getElementById('src-toggle-btn');
+  if(!sourceMode){
+    ta.value=getBodyHtml(); sourceMode=true;
+    ed.style.display='none'; ta.style.display='block'; btn.classList.add('active'); deselectImg();
+    document.querySelectorAll('#editor-toolbar [data-cmd]').forEach(b=>b.classList.remove('active'));
+  } else {
+    ed.innerHTML=ta.value||'<p><br></p>'; sourceMode=false;
+    ta.style.display='none'; ed.style.display=''; btn.classList.remove('active'); updateStats();
+  }
+}
+
+// ── cleaning pasted / imported HTML down to what the site supports ──
+const SAN_DROP=new Set(['SCRIPT','STYLE','META','LINK','TITLE','HEAD','IFRAME','OBJECT','EMBED','FORM','INPUT','BUTTON','TEXTAREA','SELECT','NOSCRIPT','SVG','XML','O:P']);
+const SAN_BLOCK=new Set(['P','H1','H2','H3','H4','H5','H6','BLOCKQUOTE','UL','OL','LI','DIV','TABLE','HR','PRE','FIGURE']);
+const isBoldWeight=w=>w==='bold'||w==='bolder'||(parseInt(w,10)>=600);
+function safeHref(h){ h=(h||'').trim(); return /^(https?:|mailto:|tel:|\/|#)/i.test(h) ? h : ''; }
+function sanitizeHtml(html){
+  const doc=new DOMParser().parseFromString(html,'text/html');
+  const out=document.createElement('div');
+  sanWalk(doc.body,out);
+  return out.innerHTML.replace(/<p>(\s|&nbsp;)*<\/p>/gi,'').trim();
+}
+function sanWalk(src,dst){
+  src.childNodes.forEach(n=>{
+    if(n.nodeType===3){ dst.appendChild(document.createTextNode(n.nodeValue.replace(/[ \t\r\n]+/g,' '))); return; }
+    if(n.nodeType!==1) return;
+    const tag=n.tagName.toUpperCase();
+    if(SAN_DROP.has(tag)) return;
+    const st=n.style||{}, fw=st.fontWeight||'', fs=st.fontStyle||'', td=(st.textDecoration||'')+' '+(st.textDecorationLine||'');
+    let keep=null;
+    switch(tag){
+      case 'B': case 'STRONG': keep = (fw==='normal'||fw==='400') ? null : 'strong'; break;
+      case 'I': case 'EM': keep = fs==='normal' ? null : 'em'; break;
+      case 'U': keep='u'; break;
+      case 'S': case 'STRIKE': case 'DEL': keep='s'; break;
+      case 'SUB': keep='sub'; break;
+      case 'SUP': keep='sup'; break;
+      case 'BR': dst.appendChild(document.createElement('br')); return;
+      case 'HR': dst.appendChild(document.createElement('hr')); return;
+      case 'P': case 'H1': case 'H2': case 'H3': case 'BLOCKQUOTE': case 'UL': case 'OL': case 'LI': keep=tag.toLowerCase(); break;
+      case 'H4': case 'H5': case 'H6': keep='h3'; break;
+      case 'A': keep = safeHref(n.getAttribute('href')) ? 'a' : null; break;
+      case 'IMG': {
+        const src2=n.getAttribute('src')||'';
+        if(!/^(https?:|data:image\/|\/)/i.test(src2)) return;
+        keep='img'; break;
+      }
+      case 'DIV': keep = [...n.children].some(c=>SAN_BLOCK.has(c.tagName)) ? null : 'p'; break;
+      default: keep=null;
+    }
+    let el=null;
+    if(keep){
+      el=document.createElement(keep);
+      if(keep==='a'){ el.setAttribute('href',safeHref(n.getAttribute('href'))); el.setAttribute('target','_blank'); el.setAttribute('rel','noopener noreferrer'); }
+      else if(keep==='img'){
+        el.setAttribute('src',n.getAttribute('src')); el.setAttribute('alt',n.getAttribute('alt')||'');
+        const keepProps=['float','margin','width','max-width','display','height'];
+        let css=''; keepProps.forEach(p=>{ const v=n.style&&n.style.getPropertyValue(p); if(v) css+=p+':'+v+';'; });
+        el.setAttribute('style', css||'display:block;max-width:100%;margin:1.5em auto;');
+      }
+      else if(/^(p|h1|h2|h3|blockquote|li)$/.test(keep)){
+        const ta=st.textAlign;
+        if(/^(left|center|right|justify)$/.test(ta||'')) el.setAttribute('style','text-align:'+ta+';');
+        if(keep==='p' && n.classList && n.classList.contains('article-title')) el.setAttribute('class','article-title');
+      }
+      dst.appendChild(el);
+    }
+    let inner=el||dst;
+    if(tag==='SPAN'||tag==='FONT'){
+      if(isBoldWeight(fw)){ const e=document.createElement('strong'); inner.appendChild(e); inner=e; }
+      if(fs==='italic'){ const e=document.createElement('em'); inner.appendChild(e); inner=e; }
+      if(/underline/.test(td)){ const e=document.createElement('u'); inner.appendChild(e); inner=e; }
+      if(/line-through/.test(td)){ const e=document.createElement('s'); inner.appendChild(e); inner=e; }
+    }
+    if(keep!=='img') sanWalk(n,inner);
+    if(el && /^(strong|em|u|s|a|sub|sup)$/.test(keep) && !el.textContent.trim() && !el.querySelector('img')) el.replaceWith(...el.childNodes);
+  });
+}
+function textToHtml(text){
+  return text.replace(/\r/g,'').split(/\n{2,}/).filter(p=>p.trim()).map(p=>'<p>'+escHtml(p).replace(/\n/g,'<br>')+'</p>').join('');
+}
+
+// ── images: upload, paste, drop, resize/align ──
+async function cloudinaryUpload(file){
+  const cfg=getCloudinaryConfig();
+  if(!cfg.cloudName||!cfg.uploadPreset) throw new Error('Cloudinary not configured — go to Database settings');
+  const fd=new FormData();
+  fd.append('file',file); fd.append('upload_preset',cfg.uploadPreset); fd.append('folder','cahs-and-effect');
+  const res=await fetch(`https://api.cloudinary.com/v1_1/${cfg.cloudName}/image/upload`,{method:'POST',body:fd});
+  const json=await res.json();
+  if(!res.ok) throw new Error((json.error&&json.error.message)||'Upload failed');
+  return json.secure_url;
+}
+async function insertImageFile(file){
+  showToast('Uploading image…');
+  try{
+    const url=await cloudinaryUpload(file);
+    const alt=(file.name||'').replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');
+    insertHtmlAtCursor(`<img src="${escAttr(url)}" alt="${escAttr(alt)}" style="${imgStyle('block')}">`);
+    showToast('Image added ✓','success');
+  }catch(err){ showToast('Upload failed: '+err.message,'error'); }
+}
+// Safety net: any base64 images (e.g. from a pasted/imported doc with no Cloudinary) are uploaded on save
+async function uploadEmbeddedImages(){
+  if(sourceMode) toggleSourceView();
+  const imgs=[...editorEl().querySelectorAll('img[src^="data:"]')];
+  if(!imgs.length) return true;
+  const cfg=getCloudinaryConfig();
+  if(!cfg.cloudName||!cfg.uploadPreset){
+    showToast('This article has embedded images. Set up Cloudinary in Database settings first so they can be uploaded.','error');
+    return false;
+  }
+  showToast(`Uploading ${imgs.length} image${imgs.length>1?'s':''}…`);
+  try{
+    for(const img of imgs){
+      const blob=await (await fetch(img.src)).blob();
+      img.src=await cloudinaryUpload(new File([blob],'image',{type:blob.type}));
+    }
+    return true;
+  }catch(err){ showToast('Image upload failed: '+err.message,'error'); return false; }
+}
+
+function selectImg(img){
+  deselectImg(); selectedImg=img; img.classList.add('img-selected'); positionImgTools();
+}
+function deselectImg(){
+  if(selectedImg){ selectedImg.classList.remove('img-selected'); if(!selectedImg.getAttribute('class')) selectedImg.removeAttribute('class'); }
+  selectedImg=null;
+  const t=document.getElementById('img-tools'); if(t) t.classList.remove('show');
+}
+function positionImgTools(){
+  if(!selectedImg) return;
+  const t=document.getElementById('img-tools'), r=selectedImg.getBoundingClientRect();
+  t.classList.add('show');
+  t.style.top=Math.max(8,r.top-44)+'px';
+  t.style.left=Math.max(8,Math.min(r.left,window.innerWidth-260))+'px';
+}
+function setImgAlign(a){ if(!selectedImg) return; selectedImg.setAttribute('style',imgStyle(a)); positionImgTools(); articleDirty=true; updateStats(); }
+function setImgAlt(){
+  if(!selectedImg) return;
+  const v=prompt('Alt text (describes the image for screen readers):',selectedImg.getAttribute('alt')||'');
+  if(v!==null){ selectedImg.setAttribute('alt',v); articleDirty=true; }
+}
+function removeSelectedImg(){ if(!selectedImg) return; selectedImg.remove(); deselectImg(); articleDirty=true; updateStats(); }
+
+// ── Word (.docx) import via mammoth.js ──
+function loadMammoth(){
+  if(window.mammoth) return Promise.resolve();
+  const urls=['https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js','https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js'];
+  const tryLoad=u=>new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=u; s.onload=()=>window.mammoth?res():rej(); s.onerror=rej; document.head.appendChild(s); });
+  return urls.reduce((p,u)=>p.catch(()=>tryLoad(u)),Promise.reject()).catch(()=>{ throw new Error('Could not load the Word importer — check your internet connection'); });
+}
+async function importDocx(e){
+  const file=e.target.files[0]; e.target.value='';
+  if(!file) return;
+  if(!/\.docx$/i.test(file.name)){ showToast('Please choose a .docx file (save older .doc files as .docx first)','error'); return; }
+  if(sourceMode) toggleSourceView();
+  showToast('Reading Word document…');
+  try{
+    await loadMammoth();
+    const cfg=getCloudinaryConfig(), canUpload=!!(cfg.cloudName&&cfg.uploadPreset);
+    let embedded=0;
+    const result=await mammoth.convertToHtml({arrayBuffer:await file.arrayBuffer()},{
+      styleMap:["p[style-name='Title'] => p.article-title:fresh","u => u","strike => s"],
+      convertImage: mammoth.images.imgElement(async image=>{
+        const type=image.contentType||'image/png', b64=await image.read('base64'), dataUri=`data:${type};base64,${b64}`;
+        if(!canUpload){ embedded++; return {src:dataUri}; }
+        try{
+          const blob=await (await fetch(dataUri)).blob();
+          return {src:await cloudinaryUpload(new File([blob],'docx-image',{type}))};
+        }catch(err){ embedded++; return {src:dataUri}; }
+      })
+    });
+    const html=sanitizeHtml(result.value);
+    if(!html){ showToast('That document looks empty','error'); return; }
+    const ed=editorEl(), hasContent=ed.textContent.trim()||ed.querySelector('img');
+    if(hasContent && !confirm('Replace the current article body with this document?\n\nOK = replace      Cancel = add it to the end')){
+      ed.insertAdjacentHTML('beforeend',html);
+    } else { ed.innerHTML=html; }
+    articleDirty=true; afterEdit();
+    showToast(embedded ? 'Imported ✓ — some images will upload when you save (Cloudinary must be set up)' : `Imported “${file.name}” ✓`, embedded?'':'success');
+  }catch(err){ showToast('Import failed: '+err.message,'error'); }
+}
+
+// ── editor event wiring ──
+(function initEditor(){
+  const ed=editorEl(), ta=document.getElementById('art-body');
+  try{ document.execCommand('defaultParagraphSeparator',false,'p'); }catch(e){}
+  ed.addEventListener('focus',()=>{ ensureParagraph(); try{ document.execCommand('defaultParagraphSeparator',false,'p'); }catch(e){} });
+  ed.addEventListener('input',()=>{ deselectImg(); if(ed.innerHTML===''||ed.innerHTML==='<br>') ensureParagraph(); updateStats(); });
+  ta.addEventListener('input',updateStats);
+  ed.addEventListener('scroll',()=>{ if(selectedImg) positionImgTools(); });
+  ed.addEventListener('keydown',e=>{
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); openLinkPopup(); }
+    if(e.key==='Enter'){   // a new line after a Title should be a normal paragraph, not another Title
+      const b=liveBlock();
+      if(b && b.classList.contains('article-title')) setTimeout(()=>{
+        const nb=liveBlock();
+        if(nb && nb!==b){ nb.classList.remove('article-title'); if(!nb.getAttribute('class')) nb.removeAttribute('class'); refreshToolbarState(); }
+      },0);
+    }
+  });
+  document.addEventListener('click',e=>{
+    if(e.target.tagName==='IMG' && ed.contains(e.target)) selectImg(e.target);
+    else if(!e.target.closest('#img-tools')) deselectImg();
+  });
+  ed.addEventListener('paste',async e=>{
+    const cd=e.clipboardData; if(!cd) return;
+    e.preventDefault();
+    const html=cd.getData('text/html'), text=cd.getData('text/plain');
+    const files=[...cd.files].filter(f=>f.type.startsWith('image/'));
+    const clean=html?sanitizeHtml(html):'';
+    if(clean && (clean.replace(/<[^>]*>/g,'').trim() || /<img/i.test(clean))){ insertHtmlAtCursor(clean); return; }
+    if(files.length){ for(const f of files) await insertImageFile(f); return; }
+    if(text) insertHtmlAtCursor(textToHtml(text));
+  });
+  ed.addEventListener('dragover',e=>{ if([...(e.dataTransfer?.items||[])].some(i=>i.kind==='file')) e.preventDefault(); });
+  ed.addEventListener('drop',async e=>{
+    const files=[...(e.dataTransfer?.files||[])].filter(f=>f.type.startsWith('image/'));
+    if(!files.length) return;
+    e.preventDefault();
+    let r=null;
+    if(document.caretRangeFromPoint) r=document.caretRangeFromPoint(e.clientX,e.clientY);
+    else if(document.caretPositionFromPoint){ const p=document.caretPositionFromPoint(e.clientX,e.clientY); if(p){ r=document.createRange(); r.setStart(p.offsetNode,p.offset); r.collapse(true); } }
+    if(r&&ed.contains(r.startContainer)) lastRange=r;
+    for(const f of files) await insertImageFile(f);
+  });
+})();
+
 
 // ─── INLINE IMAGE INSERTION ───────────────────────────────────────────
 function toggleImgInsertBar(){
@@ -861,8 +1331,8 @@ function insertInlineImage(){
   if(align==='center')styleStr=' style="display:block;margin:1.5em auto;max-width:80%;"';
   if(align==='block') styleStr=' style="display:block;width:100%;margin:1.5em 0;"';
 
-  const tag=`<img src="${url}" alt="${alt}"${styleStr}>`;
-  insertText('art-body', tag);
+  const tag=`<img src="${escAttr(url)}" alt="${escAttr(alt)}"${styleStr}>`;
+  insertHtmlAtCursor(tag);
 
   // Reset and close the bar
   document.getElementById('img-insert-url').value='';
@@ -873,36 +1343,25 @@ function insertInlineImage(){
 }
 
 // ─── INSERT LINK POPUP ─────────────────────────────────────────────────
-let linkPopupTarget=null, linkPopupSelStart=0, linkPopupSelEnd=0;
-function openLinkPopup(targetId){
-  const ta=document.getElementById(targetId);
-  linkPopupTarget=targetId;
-  linkPopupSelStart=ta.selectionStart;
-  linkPopupSelEnd=ta.selectionEnd;
-  const selectedText=ta.value.substring(linkPopupSelStart,linkPopupSelEnd);
-  document.getElementById('link-popup-text').value=selectedText;
+function openLinkPopup(){
+  if(sourceMode){showToast('Switch back to the visual editor to insert a link');return;}
+  const sel=lastRange?lastRange.toString():'';
+  document.getElementById('link-popup-text').value=sel;
   document.getElementById('link-popup-url').value='';
   document.getElementById('link-popup-overlay').classList.add('open');
   document.getElementById('link-popup-url').focus();
 }
 function closeLinkPopup(){
   document.getElementById('link-popup-overlay').classList.remove('open');
-  linkPopupTarget=null;
 }
 function insertLinkFromPopup(){
-  if(!linkPopupTarget)return;
   let url=document.getElementById('link-popup-url').value.trim();
   if(!url){showToast('Please enter a URL');return;}
   // Auto-prepend https:// for bare domains (e.g. "example.com")
   if(!/^([a-z][a-z0-9+.-]*:|\/|#)/i.test(url)) url='https://'+url;
   const text=document.getElementById('link-popup-text').value.trim()||url;
-  const tag=`<a href="${url}" target="_blank" rel="noopener noreferrer">${text}</a>`;
-  const ta=document.getElementById(linkPopupTarget);
-  ta.value=ta.value.substring(0,linkPopupSelStart)+tag+ta.value.substring(linkPopupSelEnd);
-  ta.focus();
-  const caret=linkPopupSelStart+tag.length;
-  ta.selectionStart=ta.selectionEnd=caret;
   closeLinkPopup();
+  insertHtmlAtCursor(`<a href="${escAttr(url)}" target="_blank" rel="noopener noreferrer">${escHtml(text)}</a>`);
   showToast('Link inserted ✓','success');
 }
 document.addEventListener('keydown',e=>{
@@ -958,7 +1417,12 @@ function decodeBodyWhitespace(html) {
     .replace(/&emsp;/gi, TAB_CHAR);    // &emsp; → nbsp×4
 }
 
-document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+// Clicking the dark backdrop closes the issue/writer dialogs, but never the article editor
+// (too easy to lose work). The article editor closes only via ✕ / Cancel, with a confirm if edited.
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  if(o.id==='article-modal')return;
+  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});
+});
 checkAuth();
 </script>
 </body>
