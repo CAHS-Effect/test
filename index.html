@@ -15,14 +15,14 @@
         url('images/hero-board.jpg') center / cover no-repeat,
         var(--ink);
     }
-    /* Left panel: full-height photo, slanted edge mirrors the right panel */
+    /* Left panel: full-height photo, slanted edge runs parallel to the right panel so the two meet */
     .hero-left-photo {
-      position: absolute; top: 0; left: 0; width: 45%; height: 100%;
+      position: absolute; top: 0; left: 0; width: 60.9%; height: 100%;
       background:
         linear-gradient(to top, rgba(26,26,26,0.6), rgba(26,26,26,0) 45%),
         url('images/hero-school.jpg') center / cover no-repeat,
         var(--ink);
-      clip-path: polygon(0 0, 88% 0, 100% 100%, 0 100%);
+      clip-path: polygon(0 0, 100% 0, 91.13% 100%, 0 100%);   /* right edge is parallel to the right panel's edge, no gap */
     }
     .hero-content { align-self: stretch; }
     .hero-text { align-self: end; padding-bottom: 56px; }
