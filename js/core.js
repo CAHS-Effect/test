@@ -173,7 +173,7 @@ function readTimeLabel(article) {
   return (r.low === r.high ? r.low : r.low + '–' + r.high) + ' min read';
 }
 function emptyStateHTML(kind) {
-  return `<div class="empty-state"><h3>Not available</h3></div>`;
+  return `<div class="empty-state"><h3>Not available yet</h3></div>`;
 }
 function getParam(k) { return new URLSearchParams(window.location.search).get(k); }
 function truncate(s,max=140) { if(!s||s.length<=max)return s||''; return s.slice(0,max).trim()+'…'; }
