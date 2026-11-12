@@ -20,7 +20,7 @@
       position: absolute; top: 0; left: 0; width: 60.9%; height: 100%;
       background:
         linear-gradient(to top, rgba(26,26,26,0.78), rgba(26,26,26,0) 70%),
-        url('images/hero-school.jpg') center / cover no-repeat,
+        url('images/hero-school.jpg') center 100% / cover no-repeat,
         var(--ink);
       clip-path: polygon(0 0, 100% 0, 91.13% 100%, 0 100%);   /* right edge is parallel to the right panel's edge, no gap */
     }
@@ -35,7 +35,7 @@
     .brand-word {
       text-decoration: underline wavy transparent; text-decoration-thickness: 3px;
       text-underline-offset: 0.14em; text-decoration-skip-ink: none;
-      transition: text-decoration-color 0.5s;
+      transition: text-decoration-color 0.5s, opacity 0.35s ease;
     }
     .brand-word.misspelled { text-decoration-color: #ff3b30; }
     .brand-caret {
@@ -44,11 +44,12 @@
     }
     .brand-caret.on { display: inline-block; }
     @keyframes brandBlink { 50% { opacity: 0; } }
-    .hero-text { align-self: end; padding-bottom: 56px; }
+    .hero-text { align-self: center; }
     .hero-visual { align-self: center; }
     .hero-text .btn-secondary { color: #fff; border-color: #fff; }
     .hero-text .btn-secondary:hover { background: #fff; color: var(--ink); }
     @media (max-width: 900px) {
+      .hero-text { align-self: end; padding-bottom: 56px; }
       .hero-left-photo { width: 100%; clip-path: none;
         background: linear-gradient(to top, rgba(26,26,26,0.75), rgba(26,26,26,0.1) 60%), url('images/hero-school.jpg') center / cover no-repeat; }
     }
@@ -196,20 +197,25 @@
 </script>
 <script>
 // Hero title animation: "Cause" gets flagged, "ause" is backspaced, "AHS" is typed.
-// Plays after the page loader finishes, and again whenever the title is hovered.
+// Plays after the page loader finishes, and again when the title is hovered for a moment.
 (function(){
   const title=document.getElementById('hero-brand'), word=document.getElementById('brand-word'),
         tail=document.getElementById('brand-tail'), caret=document.getElementById('brand-caret');
   if(!word) return;
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-  let running=false;
-  async function run(pause){
+  let running=false, hoverTimer=null;
+  async function run(pause, fadeBack){
     if(running) return;
     if(reduce){ tail.textContent='AHS'; word.classList.remove('misspelled'); return; }
     running=true;
-    tail.textContent='ause'; word.classList.add('misspelled'); caret.classList.remove('on');   // (re)set to the typo
-    await sleep(pause);                                  // let the typo sit there
+    caret.classList.remove('on');
+    if(fadeBack){                                         // fade the corrected word out, fade the typo back in
+      word.style.opacity='0'; await sleep(380);
+      tail.textContent='ause'; word.classList.add('misspelled');
+      word.style.opacity='1'; await sleep(380);
+    } else { tail.textContent='ause'; word.classList.add('misspelled'); }
+    await sleep(pause);                                   // let the typo sit there
     caret.classList.add('on'); await sleep(500);
     for(let t=tail.textContent; t.length;){ t=t.slice(0,-1); tail.textContent=t; await sleep(120); }   // backspace "ause"
     await sleep(350);
@@ -218,11 +224,13 @@
     await sleep(1200); caret.classList.remove('on');
     running=false;
   }
-  title.addEventListener('mouseenter',()=>run(600));      // replay on hover (ignored while already playing)
+  // replay only after the pointer rests on the title for a moment (a quick pass-over does nothing)
+  title.addEventListener('mouseenter',()=>{ clearTimeout(hoverTimer); hoverTimer=setTimeout(()=>run(600,true),450); });
+  title.addEventListener('mouseleave',()=>clearTimeout(hoverTimer));
   const started=Date.now(), hadLoader=!!document.getElementById('page-loader');
   (function wait(){
     const loaderGone=!document.getElementById('page-loader');
-    if((hadLoader&&loaderGone)||(!hadLoader&&Date.now()-started>300)||Date.now()-started>8000) run(1400); else setTimeout(wait,100);
+    if((hadLoader&&loaderGone)||(!hadLoader&&Date.now()-started>300)||Date.now()-started>8000) run(1400,false); else setTimeout(wait,100);
   })();
 })();
 </script>
