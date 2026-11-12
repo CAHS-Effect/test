@@ -19,12 +19,31 @@
     .hero-left-photo {
       position: absolute; top: 0; left: 0; width: 60.9%; height: 100%;
       background:
-        linear-gradient(to top, rgba(26,26,26,0.6), rgba(26,26,26,0) 45%),
+        linear-gradient(to top, rgba(26,26,26,0.78), rgba(26,26,26,0) 70%),
         url('images/hero-school.jpg') center / cover no-repeat,
         var(--ink);
       clip-path: polygon(0 0, 100% 0, 91.13% 100%, 0 100%);   /* right edge is parallel to the right panel's edge, no gap */
     }
     .hero-content { align-self: stretch; }
+    /* Animated hero title: "Cause" is flagged as a typo, backspaced, and corrected to "CAHS" */
+    .hero-brand {
+      font-family: 'Playfair Display', serif; font-weight: 900;
+      font-size: clamp(3rem, 6.2vw, 5.6rem); line-height: 1.08;
+      color: #fff; margin-bottom: 28px;
+      text-shadow: 0 2px 24px rgba(0,0,0,0.55);
+    }
+    .brand-word {
+      text-decoration: underline wavy transparent; text-decoration-thickness: 3px;
+      text-underline-offset: 0.14em; text-decoration-skip-ink: none;
+      transition: text-decoration-color 0.5s;
+    }
+    .brand-word.misspelled { text-decoration-color: #ff3b30; }
+    .brand-caret {
+      display: none; width: 0.06em; height: 0.85em; background: #fff;
+      margin-left: 0.04em; vertical-align: -0.05em; animation: brandBlink 1s steps(1) infinite;
+    }
+    .brand-caret.on { display: inline-block; }
+    @keyframes brandBlink { 50% { opacity: 0; } }
     .hero-text { align-self: end; padding-bottom: 56px; }
     .hero-visual { align-self: center; }
     .hero-text .btn-secondary { color: #fff; border-color: #fff; }
@@ -65,6 +84,7 @@
         <div class="hero-kicker fade-up" id="hero-kicker" hidden>Words with weight</div>
         <h1 class="fade-up delay-1" id="hero-title" hidden>We write<br><em>stories that</em><br>stay with you.</h1>
         <p class="hero-desc fade-up delay-2" id="hero-desc" hidden>The CAHS & Effect is an independent publication dedicated to journalism and creative writing that takes its time. No noise. No churn. Just writing that matters.</p>
+        <h1 class="hero-brand fade-up delay-1" id="hero-brand" aria-label="The CAHS &amp; Effect"><span aria-hidden="true">The <span class="brand-word misspelled" id="brand-word">C<span id="brand-tail">ause</span></span><span class="brand-caret" id="brand-caret"></span><br>&amp; Effect</span></h1>
         <div style="display:flex;gap:16px;flex-wrap:wrap;" class="fade-up delay-3">
           <a href="creative.html" class="btn-primary">Read Creative <span class="arrow">→</span></a>
           <a href="news.html" class="btn-secondary">Latest News</a>
@@ -173,6 +193,38 @@
     hidePageLoader();
     console.error(err);
   });
+</script>
+<script>
+// Hero title animation: "Cause" gets flagged, "ause" is backspaced, "AHS" is typed.
+// Plays after the page loader finishes, and again whenever the title is hovered.
+(function(){
+  const title=document.getElementById('hero-brand'), word=document.getElementById('brand-word'),
+        tail=document.getElementById('brand-tail'), caret=document.getElementById('brand-caret');
+  if(!word) return;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  let running=false;
+  async function run(pause){
+    if(running) return;
+    if(reduce){ tail.textContent='AHS'; word.classList.remove('misspelled'); return; }
+    running=true;
+    tail.textContent='ause'; word.classList.add('misspelled'); caret.classList.remove('on');   // (re)set to the typo
+    await sleep(pause);                                  // let the typo sit there
+    caret.classList.add('on'); await sleep(500);
+    for(let t=tail.textContent; t.length;){ t=t.slice(0,-1); tail.textContent=t; await sleep(120); }   // backspace "ause"
+    await sleep(350);
+    for(const ch of 'AHS'){ tail.textContent+=ch; await sleep(170); }                                   // type "AHS"
+    await sleep(250); word.classList.remove('misspelled');                                              // typo fixed, squiggle fades
+    await sleep(1200); caret.classList.remove('on');
+    running=false;
+  }
+  title.addEventListener('mouseenter',()=>run(600));      // replay on hover (ignored while already playing)
+  const started=Date.now(), hadLoader=!!document.getElementById('page-loader');
+  (function wait(){
+    const loaderGone=!document.getElementById('page-loader');
+    if((hadLoader&&loaderGone)||(!hadLoader&&Date.now()-started>300)||Date.now()-started>8000) run(1400); else setTimeout(wait,100);
+  })();
+})();
 </script>
 </body>
 </html>
